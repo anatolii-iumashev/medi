@@ -1,0 +1,39 @@
+---
+import MeditationPlayer from '../components/MeditationPlayer.astro';
+import '../styles/global.css';
+
+const title = 'Medi — Тихое дыхание';
+const description = 'Одна спокойная медитация, доступная без сети после первого открытия.';
+---
+
+<!doctype html>
+<html lang="ru" data-theme="medi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#17231f" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+    <link rel="manifest" href={`${import.meta.env.BASE_URL}manifest.webmanifest`} />
+    <script src={`${import.meta.env.BASE_URL}registerSW.js`} defer></script>
+    <title>{title}</title>
+  </head>
+  <body>
+    <main class="relative flex min-h-dvh items-center justify-center overflow-x-hidden bg-base-100 px-5 py-10 text-base-content sm:px-8 sm:py-14">
+      <div class="flex w-full max-w-md flex-col items-center">
+        <p class="mb-9 self-start text-lg font-semibold tracking-tight">medi</p>
+        <MeditationPlayer />
+        <aside class="mt-10 w-full max-w-xs border-t border-base-content/10 pt-6 text-center" aria-label="Установка приложения">
+          <p class="text-sm leading-relaxed text-base-content/65" data-install-instructions>
+            Добавьте Medi на домашний экран. После первого открытия практика будет доступна офлайн.
+          </p>
+          <button class="btn mt-4 min-h-11 w-full" type="button" data-install-button hidden>Установить приложение</button>
+        </aside>
+      </div>
+    </main>
+    <script>
+      import { initInstallPrompt } from '../scripts/install';
+      initInstallPrompt();
+    </script>
+  </body>
+</html>

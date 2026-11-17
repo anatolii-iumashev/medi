@@ -1,0 +1,7 @@
+- astro js ssg website + daisy ui
+  - [https://docs.astro.build/en/install-and-setup/](https://docs.astro.build/en/install-and-setup/)
+  - [https://daisyui.com/docs/install/astro/](https://daisyui.com/docs/install/astro/)
+  - github pages as deploy
+  - meditate app like Tide but based on Astro JS, SSH & PWA - progressive web app - offline work
+  - audio track from [https://www.youtube.com/watch?v=aRbqUXPqa8M](https://www.youtube.com/watch?v=aRbqUXPqa8M)
+  - simple case - install on mobile, start stop audio track - works offline and background
