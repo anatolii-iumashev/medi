@@ -40,10 +40,10 @@ npm run preview
 
 ```bash
 BASE_PATH=/medi/ SITE_URL=https://anatolii-iumashev.github.io npm run build
-npm run preview
+node tests/e2e/static-server.mjs /medi/
 ```
 
-В этом случае приложение доступно на `http://localhost:4321/medi/`.
+В этом случае приложение доступно на `http://localhost:4321/medi/`. Команда `npm run preview` использует корневой `http://localhost:4321/` независимо от собранного `base`; для проверки подпути нужен указанный static server.
 
 ## Проверки
 
