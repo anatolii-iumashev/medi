@@ -89,11 +89,21 @@ E2E-тесты сами собирают сайт с `BASE_PATH=/medi/` и за�
 
 ## Публикация на GitHub Pages
 
-Целевой URL репозитория: <https://anatolii-iumashev.github.io/medi/>. Актуальный статус публикации проверяется по этому URL и в GitHub Actions; не считайте сайт доступным только по наличию workflow.
+Приложение открывается по адресу <https://anatolii-iumashev.github.io/medi/> после успешного деплоя. Актуальный статус проверяется по этому URL и в GitHub Actions; не считайте сайт доступным только по наличию workflow.
 
-Workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) запускается при push в `main` и вручную через `workflow_dispatch`. Он устанавливает Node.js из `.nvmrc`, выполняет `npm ci`, проверки типов, unit-тесты и сборку, затем публикует `dist/` официальными Pages actions. `configure-pages` может автоматически включить Pages; при ручной настройке выберите **Settings → Pages → Build and deployment → Source → GitHub Actions**. Персональные токены не нужны.
+Собранный сайт публикуется в отдельную ветку `gh-pages`, а не в `main`. Один раз включите Pages: **Settings → Pages → Build and deployment → Source → Deploy from a branch**, ветка `gh-pages`, папка `/ (root)`. После этого каждый новый коммит в `gh-pages` обновляет сайт.
 
-В GitHub Actions `site` и `base` вычисляются из `GITHUB_REPOSITORY_OWNER` и `GITHUB_REPOSITORY`; для другого окружения их можно задать через `SITE_URL` и `BASE_PATH`. После первого успешного деплоя проверьте прямой заход, перезагрузку, standalone-запуск и повторный push.
+Workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) запускается при push в `main` и вручную через `workflow_dispatch`: устанавливает Node.js из `.nvmrc`, выполняет `npm ci`, проверки типов, unit-тесты, сборку и публикует `dist/` в `gh-pages`. Персональные токены не нужны.
+
+Локально деплой работает из любой ветки:
+
+```bash
+make build-and-deploy
+```
+
+Команда прогоняет `check`, unit-тесты и production-сборку с путями Pages, затем публикует `dist/` в `gh-pages` через `gh-pages`. Публикуется текущее состояние рабочего дерева, включая незакоммиченные изменения. Отдельный `make deploy` публикует уже собранный `dist/` без пересборки.
+
+В GitHub Actions `site` и `base` вычисляются из `GITHUB_REPOSITORY_OWNER` и `GITHUB_REPOSITORY`; Makefile передаёт `SITE_URL` и `BASE_PATH` (по умолчанию `https://anatolii-iumashev.github.io` и `/medi/`). После первого успешного деплоя проверьте прямой заход, перезагрузку, standalone-запуск и повторный push.
 
 ## Документация
 

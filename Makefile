@@ -3,14 +3,16 @@ SHELL := /bin/bash
 REPO ?= anatolii-iumashev/medi
 SITE_URL ?= https://anatolii-iumashev.github.io
 BASE_PATH ?= /medi/
+DEPLOY_BRANCH ?= gh-pages
 
-.PHONY: help check test build build-and-deploy
+.PHONY: help check test build deploy build-and-deploy
 
 help:
 	@echo "make check             — проверка Astro/TypeScript"
 	@echo "make test              — unit-тесты Vitest"
 	@echo "make build             — production-сборка с путями GitHub Pages"
-	@echo "make build-and-deploy  — проверки, сборка, push в main и запуск деплоя"
+	@echo "make deploy            — публикация dist/ в ветку $(DEPLOY_BRANCH)"
+	@echo "make build-and-deploy  — проверки, сборка и публикация из текущей ветки"
 
 check:
 	npm run check
@@ -21,16 +23,12 @@ test:
 build:
 	BASE_PATH=$(BASE_PATH) SITE_URL=$(SITE_URL) npm run build
 
+deploy:
+	@test -d dist || { echo "Нет dist/ — сначала выполните make build."; exit 1; }
+	touch dist/.nojekyll
+	npx gh-pages -d dist -b $(DEPLOY_BRANCH) -m "deploy: $$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+	@echo "Опубликовано в $(DEPLOY_BRANCH): $(SITE_URL)$(BASE_PATH)"
+
 build-and-deploy:
-	@test "$$(git branch --show-current)" = "main" || { \
-		echo "Деплой идёт только из main — переключитесь на main и повторите."; \
-		exit 1; \
-	}
-	@if ! git diff --quiet || ! git diff --cached --quiet; then \
-		echo "Есть незакоммиченные изменения — закоммитьте их перед деплоем."; \
-		exit 1; \
-	fi
 	$(MAKE) --no-print-directory check test build
-	git push origin main
-	@echo "Push в main запустил деплой: https://github.com/$(REPO)/actions/workflows/deploy.yml"
-	@echo "Приложение после публикации: $(SITE_URL)$(BASE_PATH)"
+	$(MAKE) --no-print-directory deploy
