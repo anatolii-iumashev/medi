@@ -1,7 +1,102 @@
-- astro js ssg website + daisy ui
-  - [https://docs.astro.build/en/install-and-setup/](https://docs.astro.build/en/install-and-setup/)
-  - [https://daisyui.com/docs/install/astro/](https://daisyui.com/docs/install/astro/)
-  - github pages as deploy
-  - meditate app like Tide but based on Astro JS, SSH & PWA - progressive web app - offline work
-  - audio track from [https://www.youtube.com/watch?v=aRbqUXPqa8M](https://www.youtube.com/watch?v=aRbqUXPqa8M)
-  - simple case - install on mobile, start stop audio track - works offline and background
+# Medi
+
+Одностраничная PWA для одной спокойной медитации. Приложение запускает локальный зацикленный трек «Тихое дыхание», показывает фактическое состояние звука и после первого полного онлайн-открытия работает без сети.
+
+## Возможности и границы
+
+- Одна практика и одна основная кнопка: «Начать» / «Стоп».
+- «Стоп» останавливает звук и возвращает трек в начало; повторный запуск начинает практику сначала.
+- Локальное шестиминутное аудио зациклено, без YouTube и внешних аудиосервисов.
+- Media Session передаёт системе название, обложку и действия play, pause и stop там, где API поддерживается.
+- Service worker предкэширует страницу, скрипты, стили, иконки, manifest и MP3.
+- Установка на домашний экран через нативный запрос браузера или инструкцию для iOS.
+
+В MVP нет аккаунтов, библиотеки треков, таймеров, статистики, аналитики, push-уведомлений, backend и нативных приложений.
+
+## Стек
+
+Astro 7 генерирует статический сайт, Tailwind CSS 4 и daisyUI 5 отвечают за интерфейс, `@vite-pwa/astro` и Workbox — за manifest и service worker. Интерактивность написана на TypeScript и стандартных Web API без клиентского UI-фреймворка. Публикация настроена через GitHub Actions и GitHub Pages.
+
+## Локальная разработка
+
+Требуется Node.js 24 (версия зафиксирована в [.nvmrc](.nvmrc)) и npm.
+
+```bash
+nvm use
+npm ci
+npm run dev
+```
+
+Astro по умолчанию открывает сайт на `http://localhost:4321/`.
+
+Сборка и локальный просмотр результата:
+
+```bash
+npm run build
+npm run preview
+```
+
+Для проверки GitHub Pages-подпути локально:
+
+```bash
+BASE_PATH=/medi/ SITE_URL=https://anatolii-iumashev.github.io npm run build
+npm run preview
+```
+
+В этом случае приложение доступно на `http://localhost:4321/medi/`.
+
+## Проверки
+
+В новом окружении один раз установите браузер Playwright:
+
+```bash
+npx playwright install chromium
+```
+
+Команды проекта:
+
+```bash
+npm run check     # типы и диагностика Astro/TypeScript
+npm test          # unit-тесты состояния плеера и Media Session
+npm run build     # статическая сборка и генерация PWA
+npm run test:e2e  # адаптивность, плеер, base, precache и офлайн-сценарий
+npm run test:all  # все проверки выше в рабочей последовательности
+```
+
+E2E-тесты сами собирают сайт с `BASE_PATH=/medi/` и запускают статический сервер с поддержкой HTTP Range для аудио. Vitest собирает только unit-тесты `tests/**/*.test.ts`; Playwright-файлы остаются в отдельном запуске.
+
+## Установка и использование PWA
+
+Для установки нужен HTTPS либо localhost.
+
+1. Откройте сайт в Chrome на Android или Safari на iOS.
+2. На Android нажмите «Установить приложение», если появилась кнопка, либо выберите установку в меню браузера.
+3. На iOS откройте «Поделиться» → «На экран “Домой”».
+4. При первом открытии оставайтесь онлайн, пока страница и аудио полностью не загрузятся, а service worker не активируется.
+5. Откройте приложение с домашнего экрана и нажмите «Начать». Для остановки и сброса позиции нажмите «Стоп».
+
+Проверка офлайн-режима: после успешного первого открытия закройте PWA, включите авиарежим и снова откройте её с домашнего экрана. Интерфейс должен загрузиться, а кнопки «Начать» и «Стоп» — работать без сети.
+
+Первый запуск без сети невозможен. Очистка site data удаляет кэш, после неё снова нужно полное онлайн-открытие. Если аудио недоступно, приложение показывает ошибку вместо ложного состояния воспроизведения.
+
+Фоновый звук обеспечивается нативным медиастеком браузера и ОС, а не JavaScript-таймером. Звонок, потеря аудиофокуса, энергосбережение или нехватка ресурсов могут прервать воспроизведение. Пятиминутные проверки после сворачивания и блокировки экрана на реальных актуальных iOS/Safari и Android/Chrome обязательны перед релизом; браузерные E2E-тесты их не заменяют.
+
+## Аудио, права и атрибуция
+
+Файл [`public/audio/meditation.mp3`](public/audio/meditation.mp3) — локальный технический placeholder длительностью около 6 минут, моно, 44,1 кГц, примерно 2,88 МБ. Название практики в UI и Media Session — «Тихое дыхание», исполнитель/приложение — Medi.
+
+Происхождение файла, права на его распространение, лицензия и необходимая атрибуция в репозитории не подтверждены. До их подтверждения файл нельзя считать согласованным релизным треком. Для финального релиза нужно заменить его разрешённым к распространению аудио и указать здесь автора, источник и лицензию. Если новый файл превышает 8 МиБ, также увеличьте `maximumFileSizeToCacheInBytes` в [`astro.config.mjs`](astro.config.mjs), иначе Workbox не включит его в precache.
+
+## Публикация на GitHub Pages
+
+Целевой URL репозитория: <https://anatolii-iumashev.github.io/medi/>. Актуальный статус публикации проверяется по этому URL и в GitHub Actions; не считайте сайт доступным только по наличию workflow.
+
+Workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) запускается при push в `main` и вручную через `workflow_dispatch`. Он устанавливает Node.js из `.nvmrc`, выполняет `npm ci`, проверки типов, unit-тесты и сборку, затем публикует `dist/` официальными Pages actions. `configure-pages` может автоматически включить Pages; при ручной настройке выберите **Settings → Pages → Build and deployment → Source → GitHub Actions**. Персональные токены не нужны.
+
+В GitHub Actions `site` и `base` вычисляются из `GITHUB_REPOSITORY_OWNER` и `GITHUB_REPOSITORY`; для другого окружения их можно задать через `SITE_URL` и `BASE_PATH`. После первого успешного деплоя проверьте прямой заход, перезагрузку, standalone-запуск и повторный push.
+
+## Документация
+
+- [PRODUCT.md](PRODUCT.md) — продуктовые принципы и границы дизайна.
+- [AGENTS.md](AGENTS.md) — архитектура и правила дальнейшей разработки.
+- [docs/rfc/meditation-pwa.md](docs/rfc/meditation-pwa.md) — RFC, критерии приёмки и подробная инструкция проверки.

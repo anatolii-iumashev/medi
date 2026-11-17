@@ -53,7 +53,7 @@ export default defineConfig({
       },
       generateSW: {
         globPatterns: ['**/*.{css,html,js,mp3,svg}'],
-        navigateFallback: `${base}index.html`,
+        navigateFallback: base,
         cleanupOutdatedCaches: true,
       },
     }),

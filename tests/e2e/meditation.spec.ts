@@ -79,7 +79,7 @@ test('uses base-aware manifest icons and precaches every runtime asset', async (
     return entries.flat();
   });
   for (const suffix of ['/medi/', 'audio/meditation.mp3', 'icons/icon-192.png', 'icons/icon-512.png', 'manifest.webmanifest']) {
-    expect(cachedUrls.some((url) => url.endsWith(suffix))).toBe(true);
+    expect(cachedUrls.some((url) => new URL(url).pathname.endsWith(suffix))).toBe(true);
   }
   expect(cachedUrls.some((url) => url.includes('/medi/_astro/') && url.endsWith('.css'))).toBe(true);
 });
