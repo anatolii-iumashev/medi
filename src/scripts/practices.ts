@@ -11,13 +11,13 @@ export const PRACTICES: readonly Practice[] = [
   {
     id: 'quiet-breathing',
     title: 'Тихое дыхание',
-    duration: '6 минут',
+    duration: '1 час',
     src: `${base}audio/meditation.mp3`,
   },
   {
     id: 'shamanic-drums',
     title: 'Шаманские барабаны',
-    duration: '32 секунды',
+    duration: '1 час',
     src: `${base}audio/shamanic-drums-loop.mp3`,
   },
 ];

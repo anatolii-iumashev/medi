@@ -59,6 +59,9 @@ for (const practice of [
     await practiceRadio(page, practice.name).check();
     await page.waitForFunction(() => document.querySelector('audio')?.readyState === 4);
     await expect(page.locator('audio')).toHaveAttribute('src', new RegExp(`/medi/audio/${practice.file}$`));
+    const duration = await page.locator('audio').evaluate((audio: HTMLAudioElement) => audio.duration);
+    expect(duration).toBeGreaterThan(3500);
+    expect(duration).toBeLessThan(3700);
     const button = playerButton(page);
     await button.click();
     await expect(button).toHaveText('Стоп');

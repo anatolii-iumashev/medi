@@ -20,7 +20,7 @@ export default defineConfig({
     AstroPWAIntegration({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+      maximumFileSizeToCacheInBytes: 24 * 1024 * 1024,
       manifest: {
         id: base,
         name: 'Medi — спокойные практики',
