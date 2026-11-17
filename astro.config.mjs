@@ -30,6 +30,7 @@ export default defineConfig({
         start_url: base,
         scope: base,
         display: 'standalone',
+        display_override: ['minimal-ui', 'standalone', 'browser'],
         background_color: '#17231f',
         theme_color: '#17231f',
         icons: [

@@ -118,6 +118,7 @@ test('uses base-aware manifest icons and precaches every runtime asset', async (
   expect(manifest.start_url).toBe('/medi/');
   expect(manifest.scope).toBe('/medi/');
   expect(manifest.display).toBe('standalone');
+  expect(manifest.display_override).toEqual(['minimal-ui', 'standalone', 'browser']);
   expect(manifest.description).not.toMatch(/одн/i);
   for (const icon of manifest.icons) {
     expect(icon.src).toMatch(/^\/medi\/icons\//);

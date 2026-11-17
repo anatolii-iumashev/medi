@@ -34,6 +34,10 @@ rfc: ../rfc/meditation-pwa.md
 - `navigateFallback` исправлен на `base`, а не `${base}index.html`, чтобы совпасть с фактическим ключом Astro в precache.
 - Добавлены `@types/node`, `vitest.config.ts` и корректная проверка revisioned cache URL — без этого заявленные чистая проверка и автотесты не проходили.
 
+## Обновление после поставки
+
+- В manifest добавлен `display_override: ['minimal-ui', 'standalone', 'browser']` при сохранённом `display: 'standalone'`. На Android и desktop установленная PWA получает минимальную шапку с меню из трёх точек и «Поделиться»; iOS, не поддерживающий `minimal-ui`, продолжает запускаться как standalone. Это изменение не затрагивает офлайн-контур и service worker.
+
 ## Известные ограничения / дальнейшие шаги
 
 - Текущий MP3 — технический placeholder. Источник, права, лицензия и атрибуция не подтверждены; согласованный финальный трек не получен.
