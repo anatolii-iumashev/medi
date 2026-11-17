@@ -7,6 +7,8 @@ rfc: ../rfc/meditation-pwa.md
 
 # Spec: Meditation PWA на Astro с офлайн-аудио
 
+> Двухтрековое поведение, добавленное после этой поставки, описано в [second-audio-track.md](./second-audio-track.md).
+
 ## Что сделано
 
 - Статическая одностраничная Astro/daisyUI PWA с практикой «Тихое дыхание», одним `<audio loop>` и кнопкой «Начать»/«Стоп».

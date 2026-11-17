@@ -1,30 +1,55 @@
 ---
-const audioUrl = `${import.meta.env.BASE_URL}audio/meditation.mp3`;
+import { DEFAULT_PRACTICE, PRACTICES } from '../scripts/practices';
+
+const audioUrl = DEFAULT_PRACTICE.src;
 const coverUrl = `${import.meta.env.BASE_URL}images/meditation-cover.svg`;
 ---
 
-<section class="flex w-full max-w-md flex-col items-center text-center" aria-labelledby="practice-title">
+<section class="flex w-full max-w-md flex-col items-center text-center" aria-labelledby="app-title">
   <img
-    class="mb-8 aspect-square w-40 rounded-full shadow-2xl shadow-black/20 sm:w-48"
+    class="mb-7 aspect-square w-36 rounded-full shadow-2xl shadow-black/20 sm:w-44"
     src={coverUrl}
     alt="Мягкие круги на спокойном тёмном фоне"
-    width="192"
-    height="192"
+    width="176"
+    height="176"
     fetchpriority="high"
   />
-  <p class="mb-3 text-xs font-semibold tracking-[0.22em] text-base-content/60 uppercase">6 минут · без сети</p>
-  <h1 id="practice-title" class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Тихое дыхание</h1>
+  <h1 id="app-title" class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Medi</h1>
   <p class="mt-4 max-w-xs text-base leading-relaxed text-base-content/70">
-    Непрерывный звук для спокойной практики. Ничего настраивать не нужно.
+    Две спокойные практики с локальным звуком. Выберите одну и начните — настраивать ничего не нужно.
   </p>
 
-  <div class="mt-8 flex min-h-6 items-center justify-center gap-2 text-sm text-base-content/80">
+  <fieldset class="mt-7 w-full max-w-xs">
+    <legend class="sr-only">Выберите практику</legend>
+    <div class="grid gap-2">
+      {
+        PRACTICES.map((practice) => (
+          <label class="flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-2xl border border-base-content/15 px-4 py-3 text-left transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-base-100">
+            <span class="flex items-center gap-3">
+              <input
+                class="radio radio-primary radio-sm"
+                type="radio"
+                name="practice"
+                value={practice.id}
+                checked={practice.id === DEFAULT_PRACTICE.id}
+                data-player-practice
+              />
+              <span class="text-sm font-medium">{practice.title}</span>
+            </span>
+            <span class="text-xs text-base-content/60">{practice.duration}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <div class="mt-6 flex min-h-6 items-center justify-center gap-2 text-sm text-base-content/80">
     <span class="status status-neutral" data-player-indicator aria-hidden="true"></span>
-    <p role="status" aria-live="polite" data-player-status>Загружаем практику…</p>
+    <p role="status" aria-live="polite" data-player-status>Загружаем «{DEFAULT_PRACTICE.title}»…</p>
   </div>
 
   <button
-    class="btn btn-primary btn-lg mt-5 min-h-14 w-full max-w-xs text-base font-semibold"
+    class="btn btn-primary btn-lg mt-4 min-h-14 w-full max-w-xs text-base font-semibold"
     type="button"
     data-player-toggle
     aria-label="Начать"

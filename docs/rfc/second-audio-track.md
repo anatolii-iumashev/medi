@@ -1,7 +1,7 @@
 ---
 title: "Второй аудиотрек и переключатель практик"
 type: rfc
-status: draft
+status: delivery
 created: 2026-11-17
 ---
 
