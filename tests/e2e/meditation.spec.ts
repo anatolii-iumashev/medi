@@ -18,7 +18,7 @@ for (const viewport of [
     const box = await button.boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(44);
     expect(box?.height).toBeGreaterThanOrEqual(44);
-    for (const name of ['Тихое дыхание', 'Шаманские барабаны']) {
+    for (const name of ['Тихое дыхание', 'Шаманские барабаны', 'Мягкий белый шум']) {
       const radio = practiceRadio(page, name);
       await expect(radio).toBeVisible();
       const labelBox = await practiceLabel(page, name).boundingBox();
@@ -48,6 +48,7 @@ test('selects a practice with the keyboard and exposes one named group', async (
 for (const practice of [
   { name: 'Тихое дыхание', file: 'meditation.mp3' },
   { name: 'Шаманские барабаны', file: 'shamanic-drums-loop.mp3' },
+  { name: 'Мягкий белый шум', file: 'soft-white-noise.mp3' },
 ]) {
   test(`plays and stops «${practice.name}» from the local loop`, async ({ page }) => {
     const externalRequests: string[] = [];
@@ -122,7 +123,7 @@ test('uses base-aware manifest icons and precaches every runtime asset', async (
   expect(manifest.scope).toBe('/medi/');
   expect(manifest.display).toBe('standalone');
   expect(manifest.display_override).toEqual(['minimal-ui', 'standalone', 'browser']);
-  expect(manifest.description).not.toMatch(/одн/i);
+  expect(manifest.description).toContain('Три спокойные практики');
   for (const icon of manifest.icons) {
     expect(icon.src).toMatch(/^\/medi\/icons\//);
     expect((await request.get(icon.src)).ok()).toBe(true);
@@ -131,8 +132,10 @@ test('uses base-aware manifest icons and precaches every runtime asset', async (
   const workerText = await worker.text();
   expect(workerText.includes('audio/meditation.mp3')).toBe(true);
   expect(workerText.includes('audio/shamanic-drums-loop.mp3')).toBe(true);
+  expect(workerText.includes('audio/soft-white-noise.mp3')).toBe(true);
   expect(workerText.includes('audio/shamanic-drums-loop.wav')).toBe(false);
   expect(workerText.includes('audio/shamanic-drums-loop.opus')).toBe(false);
+  expect(workerText.includes('audio/soft-white-noise.wav')).toBe(false);
   expect(await page.locator('audio').getAttribute('src')).toBe('/medi/audio/meditation.mp3');
   await page.evaluate(() => navigator.serviceWorker.ready);
   const cachedUrls = await page.evaluate(async () => {
@@ -147,6 +150,7 @@ test('uses base-aware manifest icons and precaches every runtime asset', async (
     '/medi/',
     'audio/meditation.mp3',
     'audio/shamanic-drums-loop.mp3',
+    'audio/soft-white-noise.mp3',
     'icons/icon-192.png',
     'icons/icon-512.png',
     'manifest.webmanifest',
@@ -156,7 +160,7 @@ test('uses base-aware manifest icons and precaches every runtime asset', async (
   expect(cachedUrls.some((url) => url.includes('/medi/_astro/') && url.endsWith('.css'))).toBe(true);
 });
 
-test('restarts and plays both practices in airplane mode after the first online visit', async ({ page, context }) => {
+test('restarts and plays all practices in airplane mode after the first online visit', async ({ page, context }) => {
   await page.goto('./');
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
@@ -164,7 +168,7 @@ test('restarts and plays both practices in airplane mode after the first online 
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'medi' })).toBeVisible();
-  for (const name of ['Тихое дыхание', 'Шаманские барабаны']) {
+  for (const name of ['Тихое дыхание', 'Шаманские барабаны', 'Мягкий белый шум']) {
     await practiceRadio(page, name).check();
     await expect(playerButton(page)).toHaveText('Начать');
     await playerButton(page).click();

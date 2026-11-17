@@ -7,6 +7,8 @@ rfc: ../rfc/second-audio-track.md
 
 # Spec: Второй аудиотрек и переключатель практик
 
+> Текущий набор расширен до трёх практик; актуальное состояние — в [third-audio-track.md](./third-audio-track.md).
+
 ## Что сделано
 
 - Оба локальных трека стали часовыми: `public/audio/meditation.mp3` (3548 с, ~21,3 МБ) и `public/audio/shamanic-drums-loop.mp3` (3616 с, ~21,7 МБ), моно, 48 кГц, 48 kbps.

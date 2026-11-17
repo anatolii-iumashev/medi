@@ -25,7 +25,7 @@ export default defineConfig({
         id: base,
         name: 'medi — спокойные практики',
         short_name: 'medi',
-        description: 'Две спокойные практики, доступные без сети.',
+        description: 'Три спокойные практики, доступные без сети.',
         lang: 'ru',
         start_url: base,
         scope: base,

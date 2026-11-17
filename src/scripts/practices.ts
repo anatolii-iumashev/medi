@@ -20,6 +20,12 @@ export const PRACTICES: readonly Practice[] = [
     duration: '1 час',
     src: `${base}audio/shamanic-drums-loop.mp3`,
   },
+  {
+    id: 'soft-white-noise',
+    title: 'Мягкий белый шум',
+    duration: '1 час',
+    src: `${base}audio/soft-white-noise.mp3`,
+  },
 ];
 
 export const DEFAULT_PRACTICE = PRACTICES[0];

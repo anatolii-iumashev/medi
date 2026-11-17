@@ -7,7 +7,7 @@ const coverUrl = `${import.meta.env.BASE_URL}images/meditation-cover.svg`;
 
 <section class="flex w-full max-w-md flex-col items-center text-center" aria-labelledby="app-title">
   <img
-    class="mb-7 aspect-square w-36 rounded-full shadow-2xl shadow-black/20 sm:w-44"
+    class="mb-5 aspect-square w-32 rounded-full shadow-2xl shadow-black/20 sm:mb-7 sm:w-44"
     src={coverUrl}
     alt="Мягкие круги на спокойном тёмном фоне"
     width="176"
@@ -15,16 +15,16 @@ const coverUrl = `${import.meta.env.BASE_URL}images/meditation-cover.svg`;
     fetchpriority="high"
   />
   <h1 id="app-title" class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">medi</h1>
-  <p class="mt-4 max-w-xs text-base leading-relaxed text-base-content/70">
-    Две спокойные практики с локальным звуком. Выберите одну и начните — настраивать ничего не нужно.
+  <p class="mt-3 max-w-xs text-sm leading-relaxed text-base-content/70 sm:mt-4 sm:text-base">
+    Три практики с локальным звуком. Выберите одну и начните.
   </p>
 
-  <fieldset class="mt-7 w-full max-w-xs">
+  <fieldset class="mt-5 w-full max-w-xs sm:mt-7">
     <legend class="sr-only">Выберите практику</legend>
     <div class="grid gap-2">
       {
         PRACTICES.map((practice) => (
-          <label class="flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-2xl border border-base-content/15 px-4 py-3 text-left transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-base-100">
+          <label class="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-2xl border border-base-content/15 px-4 py-2.5 text-left transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-base-100 sm:min-h-14 sm:py-3">
             <span class="flex items-center gap-3">
               <input
                 class="radio radio-primary radio-sm"
@@ -43,13 +43,13 @@ const coverUrl = `${import.meta.env.BASE_URL}images/meditation-cover.svg`;
     </div>
   </fieldset>
 
-  <div class="mt-6 flex min-h-6 items-center justify-center gap-2 text-sm text-base-content/80">
+  <div class="mt-5 flex min-h-6 items-center justify-center gap-2 text-sm text-base-content/80 sm:mt-6">
     <span class="status status-neutral" data-player-indicator aria-hidden="true"></span>
     <p role="status" aria-live="polite" data-player-status>Загружаем «{DEFAULT_PRACTICE.title}»…</p>
   </div>
 
   <button
-    class="btn btn-primary btn-lg mt-4 min-h-14 w-full max-w-xs text-base font-semibold"
+    class="btn btn-primary btn-lg mt-3 min-h-14 w-full max-w-xs text-base font-semibold sm:mt-4"
     type="button"
     data-player-toggle
     aria-label="Начать"
