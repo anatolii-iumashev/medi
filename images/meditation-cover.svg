@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Тихое дыхание</title>
+  <desc id="description">Три мягких концентрических круга</desc>
+  <rect width="512" height="512" rx="256" fill="#20332b"/>
+  <circle cx="256" cy="256" r="174" fill="#2d4438"/>
+  <circle cx="256" cy="256" r="118" fill="#48604a"/>
+  <circle cx="256" cy="256" r="64" fill="#b7c99a"/>
+  <circle cx="226" cy="218" r="18" fill="#d9dfbd" opacity=".65"/>
+</svg>

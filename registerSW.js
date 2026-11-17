@@ -1,0 +1,1 @@
+`serviceWorker`in navigator&&navigator.serviceWorker.register(`/medi/sw.js`,{scope:`/medi/`,type:`classic`,updateViaCache:`imports`});
