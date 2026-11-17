@@ -27,7 +27,6 @@ medi — статическая русскоязычная PWA с тремя nam
 - `src/components/MeditationPlayer.astro` — разметка плеера, `<audio>`, доступные подписи и URL обложки/аудио.
 - `src/scripts/player.ts` — состояние воспроизведения, смена источника, события аудио и Media Session.
 - `src/scripts/practices.ts` — статический typed-набор ровно из трёх практик с названием, длительностью и base-aware URL.
-- `src/scripts/install.ts` — `beforeinstallprompt`, standalone-статус и инструкция iOS.
 - `src/styles/global.css` — Tailwind 4, daisyUI 5 и тема `medi`.
 - `astro.config.mjs` — `site`, `base`, manifest, Workbox и precache.
 - `vitest.config.ts` — отделение unit-тестов от Playwright.
@@ -73,7 +72,7 @@ npm run test:e2e
 
 ### PWA и обновления
 
-PWA построена на `@vite-pwa/astro` с Workbox `generateSW`, `registerType: 'autoUpdate'` и `navigateFallback` внутри `base`. Manifest задаёт `display: 'standalone'` и `display_override: ['minimal-ui', 'standalone', 'browser']`: Android и desktop получают компактную шапку с меню из трёх точек и «Поделиться», а iOS, не поддерживающий `minimal-ui`, откатывается к `standalone` и сохраняет запуск с домашнего экрана. Не заменять `display` на `minimal-ui` без `display_override`: Safari в этом случае может открыть ярлык в обычной вкладке. Не добавлять принудительный reload при обновлении service worker во время воспроизведения. Новая сборка применяется на следующей навигации/запуске; версионирование precache и удаление устаревших кэшей остаются за Workbox.
+PWA построена на `@vite-pwa/astro` с Workbox `generateSW`, `registerType: 'autoUpdate'` и `navigateFallback` внутри `base`. Manifest задаёт `display: 'standalone'` и `display_override: ['minimal-ui', 'standalone', 'browser']`: Android и desktop получают компактную шапку с меню из трёх точек и «Поделиться», а iOS, не поддерживающий `minimal-ui`, откатывается к `standalone` и сохраняет запуск с домашнего экрана. Не заменять `display` на `minimal-ui` без `display_override`: Safari в этом случае может открыть ярлык в обычной вкладке. При `controllerchange` страница перезагружается только если `<audio>` на паузе: обновление service worker не должно прерывать звучащую практику. Новая сборка применяется на следующей навигации/запуске; версионирование precache и удаление устаревших кэшей остаются за Workbox.
 
 В precache обязаны HTML, JS, CSS, manifest, иконки, обложка и все три полных часовых MP3 (~64 МБ суммарно). `maximumFileSizeToCacheInBytes` поднят до 24 МиБ, потому что каждый файл больше прежнего лимита 8 МиБ; при дальнейшем росте аудио проверять лимит и фактическое присутствие каждого файла в `dist/sw.js`. WAV-мастера и исходные Opus/WebM в `public/` не добавляются и в `dist/` не публикуются. Workbox добавляет revision query к закэшированным URL: в проверках сравнивать `new URL(url).pathname`, а не полный URL через `endsWith()`. Основной сценарий не должен зависеть от сетевых fallback-запросов или внешних доменов. Первый запуск офлайн невозможен; очистка site data требует повторного онлайн-открытия и повторной загрузки ~64 МБ.
 

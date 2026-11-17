@@ -22,17 +22,19 @@ const description = 'Три спокойные практики с локаль�
     <main class="relative flex min-h-dvh items-center justify-center overflow-x-hidden bg-base-100 px-5 py-6 text-base-content sm:px-8 sm:py-14">
       <div class="flex w-full max-w-md flex-col items-center">
         <MeditationPlayer />
-        <aside class="mt-10 w-full max-w-xs border-t border-base-content/10 pt-6 text-center" aria-label="Установка приложения">
-          <p class="text-sm leading-relaxed text-base-content/65" data-install-instructions>
-            Добавьте medi на домашний экран. После первого открытия практики будут доступны офлайн.
-          </p>
-          <button class="btn mt-4 min-h-11 w-full" type="button" data-install-button hidden>Установить приложение</button>
-        </aside>
       </div>
     </main>
     <script>
-      import { initInstallPrompt } from '../scripts/install';
-      initInstallPrompt();
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        let reloading = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (reloading) return;
+          const audio = document.querySelector<HTMLAudioElement>('[data-player-audio]');
+          if (audio && !audio.paused) return;
+          reloading = true;
+          window.location.reload();
+        });
+      }
     </script>
   </body>
 </html>

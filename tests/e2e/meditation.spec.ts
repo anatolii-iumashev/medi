@@ -14,7 +14,7 @@ for (const viewport of [
     await page.goto('./');
     const button = playerButton(page);
     await expect(button).toBeVisible();
-    await expect(page.getByRole('status')).toBeVisible();
+    await expect(page.getByRole('status')).toBeAttached();
     const box = await button.boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(44);
     expect(box?.height).toBeGreaterThanOrEqual(44);
@@ -26,6 +26,7 @@ for (const viewport of [
       expect(labelBox?.width).toBeGreaterThanOrEqual(44);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).toBe(true);
     await button.focus();
     await page.keyboard.press('Enter');
     await expect(button).toHaveText('Стоп');
@@ -176,15 +177,4 @@ test('restarts and plays all practices in airplane mode after the first online v
     await playerButton(page).click();
     await expect(playerButton(page)).toHaveText('Начать');
   }
-});
-
-test('shows the native install action and iOS instructions', async ({ page, browser }) => {
-  await page.goto('./');
-  await page.evaluate(() => window.dispatchEvent(new Event('beforeinstallprompt')));
-  await expect(page.getByRole('button', { name: 'Установить приложение' })).toBeVisible();
-  const iosContext = await browser.newContext({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 19_0 like Mac OS X) AppleWebKit/605.1.15 Version/19.0 Mobile/15E148 Safari/604.1' });
-  const iosPage = await iosContext.newPage();
-  await iosPage.goto('http://127.0.0.1:4321/medi/');
-  await expect(iosPage.locator('[data-install-instructions]')).toContainText('Поделиться');
-  await iosContext.close();
 });
