@@ -163,7 +163,7 @@ export class MeditationPlayer {
     if (!this.mediaSession || typeof MediaMetadata === 'undefined') return;
     this.mediaSession.metadata = new MediaMetadata({
       title: this.current.title,
-      artist: 'Medi',
+      artist: 'medi',
       album: 'Медитация для спокойствия',
       artwork: this.artwork,
     });

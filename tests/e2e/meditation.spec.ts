@@ -111,10 +111,13 @@ test('reflects an external pause', async ({ page }) => {
 
 test('uses base-aware manifest icons and precaches every runtime asset', async ({ page, request }) => {
   await page.goto('./');
+  await expect(page).toHaveTitle('medi — спокойные практики');
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', '/medi/manifest.webmanifest');
   const manifestResponse = await request.get('/medi/manifest.webmanifest');
   expect(manifestResponse.ok()).toBe(true);
   const manifest = await manifestResponse.json();
+  expect(manifest.name).toBe('medi — спокойные практики');
+  expect(manifest.short_name).toBe('medi');
   expect(manifest.start_url).toBe('/medi/');
   expect(manifest.scope).toBe('/medi/');
   expect(manifest.display).toBe('standalone');
@@ -160,7 +163,7 @@ test('restarts and plays both practices in airplane mode after the first online 
   await page.waitForFunction(() => document.querySelector('audio')?.readyState === 4);
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Medi' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'medi' })).toBeVisible();
   for (const name of ['Тихое дыхание', 'Шаманские барабаны']) {
     await practiceRadio(page, name).check();
     await expect(playerButton(page)).toHaveText('Начать');

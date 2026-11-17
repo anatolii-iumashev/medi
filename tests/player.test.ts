@@ -187,7 +187,7 @@ describe('MeditationPlayer', () => {
 
   it('exposes media metadata and play, pause and stop actions', async () => {
     const { audio, handlers, mediaSession } = setup();
-    expect(mediaSession.metadata).toMatchObject({ data: { title: 'Тихое дыхание', artist: 'Medi' } });
+    expect(mediaSession.metadata).toMatchObject({ data: { title: 'Тихое дыхание', artist: 'medi' } });
     expect([...handlers.keys()]).toEqual(['play', 'pause', 'stop']);
     await handlers.get('play')?.();
     expect(audio.paused).toBe(false);
@@ -201,7 +201,7 @@ describe('MeditationPlayer', () => {
   it('updates media metadata when the practice changes', () => {
     const { mediaSession, player } = setup();
     player.select(drums);
-    expect(mediaSession.metadata).toMatchObject({ data: { title: 'Шаманские барабаны', artist: 'Medi' } });
+    expect(mediaSession.metadata).toMatchObject({ data: { title: 'Шаманские барабаны', artist: 'medi' } });
     expect(mediaSession.playbackState).toBe('none');
   });
 });

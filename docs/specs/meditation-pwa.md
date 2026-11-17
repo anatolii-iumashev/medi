@@ -13,7 +13,7 @@ rfc: ../rfc/meditation-pwa.md
 
 - Статическая одностраничная Astro/daisyUI PWA с практикой «Тихое дыхание», одним `<audio loop>` и кнопкой «Начать»/«Стоп».
 - Start запускается только явным действием; Stop ставит паузу и сбрасывает позицию. Внешняя пауза сохраняет позицию, а ошибки и отказ `play()` отображаются в live-статусе.
-- Media Session получает название, Medi, обложку и play/pause/stop там, где браузер поддерживает API.
+- Media Session получает название, medi, обложку и play/pause/stop там, где браузер поддерживает API.
 - Manifest, иконки, аудио и обложка используют `base`. Workbox предкэширует HTML, CSS, JS, manifest, иконки, обложку и полный MP3.
 - Android install prompt и iOS-инструкция реализованы. Browser E2E подтверждает offline-reload и воспроизведение после него.
 - Unit-тесты отделены от Playwright через `vitest.config.ts`; `@types/node` позволяет `astro check` проходить на чистой установке.

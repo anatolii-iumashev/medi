@@ -23,8 +23,8 @@ export default defineConfig({
       maximumFileSizeToCacheInBytes: 24 * 1024 * 1024,
       manifest: {
         id: base,
-        name: 'Medi — спокойные практики',
-        short_name: 'Medi',
+        name: 'medi — спокойные практики',
+        short_name: 'medi',
         description: 'Две спокойные практики, доступные без сети.',
         lang: 'ru',
         start_url: base,
