@@ -1,5 +1,9 @@
 # medi
 
+- [ ] add dock - for start stop in center - settings and set audio - in right [https://daisyui.com/components/dock/](https://daisyui.com/components/dock/)
+  - [ ] change audio - via dropdown [https://daisyui.com/components/dropdown/](https://daisyui.com/components/dropdown/)
+- [ ] add aura to logo [https://daisyui.com/components/aura/](https://daisyui.com/components/aura/)
+
 Одностраничная PWA с тремя спокойными практиками. Приложение запускает локальный зацикленный трек «Тихое дыхание», «Шаманские барабаны» или «Мягкий белый шум», показывает фактическое состояние звука и после первого полного онлайн-открытия работает без сети.
 
 ## Возможности и границы
