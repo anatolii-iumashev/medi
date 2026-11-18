@@ -7,7 +7,7 @@ rfc: ../rfc/meditation-pwa.md
 
 # Spec: Meditation PWA на Astro с офлайн-аудио
 
-> Двухтрековое поведение, добавленное после этой поставки, описано в [second-audio-track.md](./second-audio-track.md).
+> Набор из трёх практик и переключатель треков, добавленные после этой поставки, описаны в [audio-tracks.md](./audio-tracks.md).
 
 ## Что сделано
 
@@ -23,7 +23,7 @@ rfc: ../rfc/meditation-pwa.md
 
 - Только статический `dist/`, без backend, аккаунтов, внешних аудиосервисов и JS-таймеров для фонового звука.
 - `generateSW.navigateFallback` равен `base`. Astro помещает главную страницу в precache по этому URL; `${base}index.html` создаёт несуществующий ключ и ошибку `non-precached-url` при инициализации worker.
-- `maximumFileSizeToCacheInBytes` на момент этой поставки был равен 8 МиБ (достаточно для MP3 2,88 МБ); актуальное значение — 24 МиБ для часовых треков, см. [second-audio-track.md](./second-audio-track.md).
+- `maximumFileSizeToCacheInBytes` на момент этой поставки был равен 8 МиБ (достаточно для MP3 2,88 МБ); актуальное значение — 24 МиБ для часовых треков, см. [audio-tracks.md](./audio-tracks.md).
 - В проверках Cache Storage сравнивается `URL.pathname`, поскольку Workbox добавляет revision query к URL.
 - Публикация выполняется в ветку `gh-pages`: GitHub Actions использует `peaceiris/actions-gh-pages`, а локальные `make build-and-deploy` и `make deploy` — пакет `gh-pages`. Pages должен использовать источник **Deploy from a branch**, `gh-pages`, `/ (root)`.
 - Деплой из Actions использует стандартный `GITHUB_TOKEN`; персональные токены не требуются. Локальный `make build-and-deploy` публикует текущее рабочее дерево, включая незакоммиченные изменения.
