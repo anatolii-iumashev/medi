@@ -2,17 +2,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MeditationPlayer } from '../src/scripts/player';
 import type { Practice } from '../src/scripts/practices';
 
-const quiet: Practice = {
-  id: 'quiet',
-  title: 'Тихое дыхание',
-  duration: '6 минут',
-  src: '/medi/audio/meditation.mp3',
+const breathing: Practice = {
+  id: 'breathing',
+  title: 'Треугольник дыхания',
+  duration: '3–10 минут',
+  src: '/medi/audio/breathing-triangle.mp3',
+  sessionDurations: [3, 5, 10],
 };
 
 const drums: Practice = {
   id: 'drums',
   title: 'Шаманские барабаны',
-  duration: '32 секунды',
+  duration: '1 час',
   src: '/medi/audio/shamanic-drums-loop.mp3',
 };
 
@@ -32,7 +33,7 @@ class FakeAudio extends EventTarget {
   load = vi.fn();
 }
 
-function setup(initial: Practice = quiet) {
+function setup(initial: Practice = breathing) {
   const audio = new FakeAudio();
   const toggle = { textContent: 'Начать', setAttribute: vi.fn(), addEventListener: vi.fn() } as unknown as HTMLButtonElement;
   const status = { textContent: '' } as HTMLElement;
@@ -59,13 +60,14 @@ function setup(initial: Practice = quiet) {
 }
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
 describe('MeditationPlayer', () => {
   it('loads the selected practice without autoplay and keeps the loop', () => {
     const { audio, toggle, status } = setup();
-    expect(audio.src).toBe(quiet.src);
+    expect(audio.src).toBe(breathing.src);
     expect(audio.load).toHaveBeenCalledOnce();
     expect(audio.play).not.toHaveBeenCalled();
     expect(audio.loop).toBe(true);
@@ -78,14 +80,14 @@ describe('MeditationPlayer', () => {
     expect(audio.play).not.toHaveBeenCalled();
     await player.toggle();
     expect(toggle.textContent).toBe('Стоп');
-    expect(status.textContent).toContain('Тихое дыхание');
+    expect(status.textContent).toContain('Треугольник дыхания');
     expect(audio.loop).toBe(true);
   });
 
   it('stops, rewinds and starts again from the beginning', async () => {
     const { audio, toggle, status, player } = setup();
     await player.toggle();
-    audio.currentTime = 42;
+    audio.currentTime = 12;
     await player.toggle();
     expect(audio.pause).toHaveBeenCalledOnce();
     expect(audio.currentTime).toBe(0);
@@ -106,11 +108,11 @@ describe('MeditationPlayer', () => {
   it('reflects an external pause and keeps the position', async () => {
     const { audio, toggle, status, player } = setup();
     await player.toggle();
-    audio.currentTime = 18;
+    audio.currentTime = 8;
     audio.pause();
     expect(toggle.textContent).toBe('Начать');
     expect(status.textContent).toContain('Пауза');
-    expect(audio.currentTime).toBe(18);
+    expect(audio.currentTime).toBe(8);
   });
 
   it('shows buffering only while audio is still playing', async () => {
@@ -133,7 +135,7 @@ describe('MeditationPlayer', () => {
   it('switches the source, resets the position and does not autoplay', async () => {
     const { audio, toggle, status, player } = setup();
     await player.toggle();
-    audio.currentTime = 21;
+    audio.currentTime = 11;
     player.select(drums);
     expect(audio.pause).toHaveBeenCalled();
     expect(audio.currentTime).toBe(0);
@@ -144,12 +146,13 @@ describe('MeditationPlayer', () => {
     expect(status.textContent).toContain('Шаманские барабаны');
   });
 
-  it('does not restart the active practice when it is selected again', async () => {
+  it('does not restart the active practice and duration when selected again', async () => {
     const { audio, player } = setup();
-    player.select(quiet);
+    player.select(breathing);
+    player.selectDuration(3);
     expect(audio.pause).not.toHaveBeenCalled();
     expect(audio.load).toHaveBeenCalledOnce();
-    expect(audio.src).toBe(quiet.src);
+    expect(audio.src).toBe(breathing.src);
   });
 
   it('plays the new practice from the beginning after a switch', async () => {
@@ -177,23 +180,141 @@ describe('MeditationPlayer', () => {
     expect(status.textContent).not.toContain('недоступно');
   });
 
+  it('ignores a stale rejected play after a duration change', async () => {
+    const { audio, status, player } = setup();
+    let rejectFirst: (reason: unknown) => void = () => {};
+    audio.play.mockImplementationOnce(() => new Promise<void>((_, reject) => {
+      rejectFirst = reject;
+    }));
+    const pending = player.toggle();
+    player.selectDuration(5);
+    rejectFirst(new DOMException('Aborted', 'AbortError'));
+    await expect(pending).resolves.toBeUndefined();
+    expect(status.textContent).not.toContain('недоступно');
+    expect(audio.play).toHaveBeenCalledOnce();
+  });
+
   it('keeps the last practice after rapid switches', () => {
     const { audio, player } = setup();
     player.select(drums);
-    player.select(quiet);
+    player.select(breathing);
     player.select(drums);
     expect(audio.src).toBe(drums.src);
   });
 
+  it.each([
+    [3, 180_000],
+    [5, 300_000],
+    [10, 600_000],
+  ])('finishes the %i-minute session by its own timer', async (duration, milliseconds) => {
+    vi.useFakeTimers();
+    const { audio, toggle, status, mediaSession, player } = setup();
+    player.selectDuration(duration);
+    await player.toggle();
+    await vi.advanceTimersByTimeAsync(milliseconds - 1);
+    expect(toggle.textContent).toBe('Стоп');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(toggle.textContent).toBe('Начать');
+    expect(status.textContent).toContain('Практика завершена');
+    expect(audio.paused).toBe(true);
+    expect(audio.currentTime).toBe(0);
+    expect(mediaSession.playbackState).toBe('none');
+    await player.toggle();
+    expect(toggle.textContent).toBe('Стоп');
+    expect(audio.currentTime).toBe(0);
+    await vi.advanceTimersByTimeAsync(milliseconds);
+    expect(status.textContent).toContain('Практика завершена');
+  });
+
+  it('preserves the remaining session time across an external pause', async () => {
+    vi.useFakeTimers();
+    const { audio, status, player } = setup();
+    await player.toggle();
+    await vi.advanceTimersByTimeAsync(60_000);
+    audio.pause();
+    await vi.advanceTimersByTimeAsync(600_000);
+    expect(status.textContent).toContain('Пауза');
+    await player.toggle();
+    await vi.advanceTimersByTimeAsync(119_999);
+    expect(status.textContent).toContain('Звучит');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(status.textContent).toContain('Практика завершена');
+  });
+
+  it('pauses the countdown while buffering', async () => {
+    vi.useFakeTimers();
+    const { audio, status, player } = setup();
+    await player.toggle();
+    await vi.advanceTimersByTimeAsync(60_000);
+    audio.dispatchEvent(new Event('waiting'));
+    await vi.advanceTimersByTimeAsync(600_000);
+    expect(status.textContent).toContain('Подключаем');
+    audio.dispatchEvent(new Event('canplay'));
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(status.textContent).toContain('Практика завершена');
+  });
+
+  it('cancels the old timer and resets the position when duration changes', async () => {
+    vi.useFakeTimers();
+    const { audio, player } = setup();
+    await player.toggle();
+    audio.currentTime = 9;
+    await vi.advanceTimersByTimeAsync(60_000);
+    player.selectDuration(5);
+    expect(audio.currentTime).toBe(0);
+    expect(audio.paused).toBe(true);
+    expect(audio.play).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(600_000);
+    await player.toggle();
+    await vi.advanceTimersByTimeAsync(299_999);
+    expect(audio.paused).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(audio.paused).toBe(true);
+  });
+
+  it('keeps the last duration after rapid changes', async () => {
+    vi.useFakeTimers();
+    const { audio, status, player } = setup();
+    player.selectDuration(5);
+    player.selectDuration(3);
+    player.selectDuration(10);
+    await player.toggle();
+    await vi.advanceTimersByTimeAsync(300_000);
+    expect(audio.paused).toBe(false);
+    await vi.advanceTimersByTimeAsync(300_000);
+    expect(status.textContent).toContain('Практика завершена');
+  });
+
+  it('does not use a session timer for hour-long practices', async () => {
+    vi.useFakeTimers();
+    const { audio, status, player } = setup(drums);
+    await player.toggle();
+    await vi.advanceTimersByTimeAsync(3_600_000);
+    expect(audio.paused).toBe(false);
+    expect(status.textContent).toContain('Звучит');
+  });
+
+  it('cancels a breathing timer when switching to another practice', async () => {
+    vi.useFakeTimers();
+    const { audio, status, player } = setup();
+    await player.toggle();
+    player.select(drums);
+    await vi.advanceTimersByTimeAsync(600_000);
+    expect(status.textContent).not.toContain('Практика завершена');
+    await player.toggle();
+    await vi.advanceTimersByTimeAsync(600_000);
+    expect(audio.paused).toBe(false);
+  });
+
   it('exposes media metadata and play, pause and stop actions', async () => {
     const { audio, handlers, mediaSession } = setup();
-    expect(mediaSession.metadata).toMatchObject({ data: { title: 'Тихое дыхание', artist: 'medi' } });
+    expect(mediaSession.metadata).toMatchObject({ data: { title: 'Треугольник дыхания', artist: 'medi' } });
     expect([...handlers.keys()]).toEqual(['play', 'pause', 'stop']);
     await handlers.get('play')?.();
     expect(audio.paused).toBe(false);
     handlers.get('pause')?.();
     expect(audio.paused).toBe(true);
-    audio.currentTime = 25;
+    audio.currentTime = 15;
     await handlers.get('stop')?.();
     expect(audio.currentTime).toBe(0);
   });

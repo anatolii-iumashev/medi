@@ -1,13 +1,14 @@
 ---
-import { DEFAULT_PRACTICE, PRACTICES } from '../scripts/practices';
+import { DEFAULT_PRACTICE, DEFAULT_SESSION_DURATION, PRACTICES } from '../scripts/practices';
 
 const audioUrl = DEFAULT_PRACTICE.src;
 const coverUrl = `${import.meta.env.BASE_URL}images/meditation-cover.svg`;
+const sessionDurations = DEFAULT_PRACTICE.sessionDurations ?? [];
 ---
 
 <section class="flex w-full max-w-md flex-col items-center text-center" aria-labelledby="app-title">
   <img
-    class="mb-6 aspect-square w-32 rounded-full shadow-2xl shadow-black/20 sm:w-44"
+    class="mb-3 aspect-square w-20 rounded-full shadow-2xl shadow-black/20 sm:mb-6 sm:w-44"
     src={coverUrl}
     alt="Мягкие круги на спокойном тёмном фоне"
     width="176"
@@ -16,24 +17,50 @@ const coverUrl = `${import.meta.env.BASE_URL}images/meditation-cover.svg`;
   />
   <h1 id="app-title" class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">medi</h1>
 
-  <fieldset class="mt-8 w-full max-w-xs sm:mt-10">
+  <fieldset class="mt-4 w-full max-w-xs sm:mt-10">
     <legend class="sr-only">Выберите практику</legend>
     <div class="grid gap-2">
       {
         PRACTICES.map((practice) => (
-          <label class="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-2xl border border-base-content/15 px-4 py-2.5 text-left transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-base-100 sm:min-h-14 sm:py-3">
+          <label class="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-2xl border border-base-content/15 px-4 py-2 text-left transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-base-100 sm:min-h-14 sm:py-3">
             <span class="flex items-center gap-3">
               <input
-                class="radio radio-primary radio-sm"
+                class="radio radio-primary radio-sm shrink-0"
                 type="radio"
                 name="practice"
                 value={practice.id}
                 checked={practice.id === DEFAULT_PRACTICE.id}
                 data-player-practice
               />
-              <span class="text-sm font-medium">{practice.title}</span>
+              <span class="flex flex-col gap-0.5">
+                <span class="text-sm font-medium">{practice.title}</span>
+                {practice.sessionDurations && (
+                  <span class="text-[10px] text-base-content/60">Выдох 7 с · вдох 7 с · задержка 7 с</span>
+                )}
+              </span>
             </span>
-            <span class="text-xs text-base-content/60">{practice.duration}</span>
+            <span class="shrink-0 text-xs text-base-content/60">{practice.duration}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <fieldset class="mt-3 w-full max-w-xs sm:mt-4" data-player-durations>
+    <legend class="mb-1 text-xs font-medium text-base-content/70">Длительность практики</legend>
+    <div class="grid grid-cols-3 gap-1.5">
+      {
+        sessionDurations.map((minutes) => (
+          <label class="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-base-content/15 px-1.5 py-2 text-xs transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-base-100">
+            <input
+              class="radio radio-primary radio-xs"
+              type="radio"
+              name="session-duration"
+              value={minutes}
+              checked={minutes === DEFAULT_SESSION_DURATION}
+              data-player-duration
+            />
+            <span>{minutes === 3 ? '3 минуты' : `${minutes} минут`}</span>
           </label>
         ))
       }
@@ -41,7 +68,7 @@ const coverUrl = `${import.meta.env.BASE_URL}images/meditation-cover.svg`;
   </fieldset>
 
   <button
-    class="btn btn-primary btn-lg mt-6 min-h-14 w-full max-w-xs text-base font-semibold sm:mt-8"
+    class="btn btn-primary btn-lg mt-4 min-h-14 w-full max-w-xs text-base font-semibold sm:mt-8"
     type="button"
     data-player-toggle
     aria-label="Начать"
