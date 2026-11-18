@@ -127,6 +127,7 @@ test('completes all three session durations and restarts from the beginning', as
     ['10 минут', 600_000],
   ] as const) {
     await durationRadio(page, name).check();
+    await page.waitForFunction(() => document.querySelector('audio')?.readyState === 4);
     await button.click();
     await expect(button).toHaveText('Стоп');
     await page.clock.fastForward(milliseconds + 1_000);
@@ -228,6 +229,7 @@ test('restarts and plays every practice and duration in airplane mode', async ({
   }
   await practiceRadio(page, 'Треугольник дыхания').check();
   await durationRadio(page, '3 минуты').check();
+  await page.waitForFunction(() => document.querySelector('audio')?.readyState === 4);
   await page.clock.install();
   await playerButton(page).click();
   await expect(playerButton(page)).toHaveText('Стоп');

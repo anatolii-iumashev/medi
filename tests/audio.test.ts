@@ -21,7 +21,8 @@ function decodePcm(): Float32Array {
     '48000',
     'pipe:1',
   ], { maxBuffer: 8 * 1024 * 1024 });
-  expect(result.status, result.stderr.toString()).toBe(0);
+  expect(result.error?.message).toBeUndefined();
+  expect(result.status, result.stderr?.toString()).toBe(0);
   return new Float32Array(result.stdout.buffer, result.stdout.byteOffset, result.stdout.byteLength / 4);
 }
 
@@ -46,6 +47,7 @@ describe('breathing triangle audio', () => {
       'json',
       audioPath,
     ], { encoding: 'utf8' });
+    expect(result.error?.message).toBeUndefined();
     expect(result.status, result.stderr).toBe(0);
     const stream = JSON.parse(result.stdout).streams[0];
     expect(stream).toMatchObject({
@@ -69,7 +71,8 @@ describe('breathing triangle audio', () => {
       'null',
       '-',
     ], { encoding: 'utf8' });
-    expect(silence.status).toBe(0);
+    expect(silence.error?.message).toBeUndefined();
+    expect(silence.status, silence.stderr).toBe(0);
     const output = `${silence.stdout}${silence.stderr}`;
     const starts = [...output.matchAll(/silence_start: ([\d.]+)/g)];
     const ends = [...output.matchAll(/silence_end: ([\d.]+)/g)];
