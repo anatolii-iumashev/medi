@@ -37,11 +37,11 @@ const sessionDurations = DEFAULT_PRACTICE.sessionDurations ?? [];
   role="group"
   aria-label="Управление практикой"
 >
-  <div class="pointer-events-none mb-0 h-auto" aria-hidden="true"></div>
+  <div class="pointer-events-none mb-0 h-auto max-w-none flex-1" aria-hidden="true"></div>
 
-  <div class="mb-0 flex h-auto cursor-default flex-col items-center justify-center hover:opacity-100">
+  <div class="mb-0 flex h-auto w-16 max-w-none flex-none cursor-default flex-col items-center justify-center hover:opacity-100">
     <button
-      class="flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-0.5 text-primary"
+      class="flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-0.5 text-primary"
       type="button"
       data-player-toggle
       aria-label="Начать"
@@ -72,14 +72,14 @@ const sessionDurations = DEFAULT_PRACTICE.sessionDurations ?? [];
           <rect x="6" y="6" width="12" height="12" rx="2"></rect>
         </svg>
       </span>
-      <span class="dock-label" data-player-toggle-label>Начать</span>
+      <span class="dock-label whitespace-nowrap" data-player-toggle-label>Начать</span>
     </button>
   </div>
 
-  <div class="mb-0 flex h-auto cursor-default flex-row items-center justify-center gap-1 hover:opacity-100">
+  <div class="mb-0 flex h-auto max-w-none flex-1 cursor-default flex-row items-center justify-end gap-1 hover:opacity-100">
     <details class="dropdown dropdown-top dropdown-end" data-player-dropdown="settings">
       <summary
-        class="flex min-h-11 min-w-11 cursor-pointer list-none flex-col items-center justify-center gap-0.5 px-1 text-base-content/70"
+        class="flex min-h-11 w-16 cursor-pointer list-none flex-col items-center justify-center gap-0.5 px-0.5 text-base-content/70"
         aria-label="Настройки"
       >
         <span class="flex size-8 items-center justify-center">
@@ -99,7 +99,7 @@ const sessionDurations = DEFAULT_PRACTICE.sessionDurations ?? [];
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
         </span>
-        <span class="dock-label">Настройки</span>
+        <span class="dock-label whitespace-nowrap">Настройки</span>
       </summary>
       <div
         class="dropdown-content z-10 w-60 max-w-[calc(100vw-2rem)] rounded-box border border-base-content/10 bg-base-200 p-3 text-left shadow-2xl"
@@ -132,7 +132,7 @@ const sessionDurations = DEFAULT_PRACTICE.sessionDurations ?? [];
 
     <details class="dropdown dropdown-top dropdown-end" data-player-dropdown="sound">
       <summary
-        class="flex min-h-11 min-w-11 cursor-pointer list-none flex-col items-center justify-center gap-0.5 px-1 text-base-content/70"
+        class="flex min-h-11 w-16 cursor-pointer list-none flex-col items-center justify-center gap-0.5 px-0.5 text-base-content/70"
         aria-label={`Звук: ${DEFAULT_PRACTICE.title}`}
       >
         <span class="flex size-8 items-center justify-center">
@@ -151,7 +151,7 @@ const sessionDurations = DEFAULT_PRACTICE.sessionDurations ?? [];
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
           </svg>
         </span>
-        <span class="dock-label">Звук</span>
+        <span class="dock-label whitespace-nowrap">Звук</span>
       </summary>
       <div
         class="dropdown-content z-10 w-64 max-w-[calc(100vw-2rem)] rounded-box border border-base-content/10 bg-base-200 p-3 text-left shadow-2xl"

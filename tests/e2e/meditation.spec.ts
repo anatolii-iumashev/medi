@@ -64,6 +64,7 @@ for (const viewport of [
       const box = await summary(page, name).boundingBox();
       expect(box?.width).toBeGreaterThanOrEqual(44);
       expect(box?.height).toBeGreaterThanOrEqual(44);
+      expect(Math.abs((box?.width ?? 0) - (buttonBox?.width ?? 0))).toBeLessThanOrEqual(1);
       expect(box?.x).toBeGreaterThanOrEqual((buttonBox?.x ?? 0) + (buttonBox?.width ?? 0));
     }
 
