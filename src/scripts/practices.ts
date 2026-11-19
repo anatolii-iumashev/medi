@@ -5,6 +5,7 @@ export const DEFAULT_SESSION_DURATION: SessionDuration = 3;
 export interface Practice {
   readonly id: string;
   readonly title: string;
+  readonly description: string;
   readonly duration: string;
   readonly src: string;
   readonly sessionDurations?: readonly SessionDuration[];
@@ -16,6 +17,7 @@ export const PRACTICES: readonly Practice[] = [
   {
     id: 'breathing-triangle',
     title: 'Треугольник дыхания',
+    description: 'Вдох 7 с · тишина 7 с · выдох 7 с',
     duration: '3–10 минут',
     src: `${base}audio/breathing-triangle.mp3`,
     sessionDurations: SESSION_DURATIONS,
@@ -23,12 +25,14 @@ export const PRACTICES: readonly Practice[] = [
   {
     id: 'shamanic-drums',
     title: 'Шаманские барабаны',
+    description: 'Ровный ритм на час',
     duration: '1 час',
     src: `${base}audio/shamanic-drums-loop.mp3`,
   },
   {
     id: 'soft-white-noise',
     title: 'Мягкий белый шум',
+    description: 'Спокойный фон на час',
     duration: '1 час',
     src: `${base}audio/soft-white-noise.mp3`,
   },

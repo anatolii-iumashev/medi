@@ -53,7 +53,26 @@ body {
   outline-offset: 4px;
 }
 
+/* Start/Stop switches its icon with the reported audio state. */
+[data-player-toggle] [data-player-icon="stop"] {
+  display: none;
+}
+
+[data-player-toggle][data-state="playing"] [data-player-icon="play"] {
+  display: none;
+}
+
+[data-player-toggle][data-state="playing"] [data-player-icon="stop"] {
+  display: block;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .aura,
+  .aura::before,
+  .aura::after {
+    animation: none !important;
+  }
+
   *,
   *::before,
   *::after {

@@ -5,6 +5,7 @@ import type { Practice } from '../src/scripts/practices';
 const breathing: Practice = {
   id: 'breathing',
   title: 'Треугольник дыхания',
+  description: 'Вдох 7 с · тишина 7 с · выдох 7 с',
   duration: '3–10 минут',
   src: '/medi/audio/breathing-triangle.mp3',
   sessionDurations: [3, 5, 10],
@@ -13,6 +14,7 @@ const breathing: Practice = {
 const drums: Practice = {
   id: 'drums',
   title: 'Шаманские барабаны',
+  description: 'Ровный ритм на час',
   duration: '1 час',
   src: '/medi/audio/shamanic-drums-loop.mp3',
 };
@@ -35,7 +37,13 @@ class FakeAudio extends EventTarget {
 
 function setup(initial: Practice = breathing) {
   const audio = new FakeAudio();
-  const toggle = { textContent: 'Начать', setAttribute: vi.fn(), addEventListener: vi.fn() } as unknown as HTMLButtonElement;
+  const toggle = {
+    textContent: 'Начать',
+    dataset: {} as DOMStringMap,
+    setAttribute: vi.fn(),
+    addEventListener: vi.fn(),
+  } as unknown as HTMLButtonElement;
+  const label = { textContent: '' } as HTMLElement;
   const status = { textContent: '' } as HTMLElement;
   const indicator = { className: 'status', dataset: {} } as unknown as HTMLElement;
   const handlers = new Map<string, () => void | Promise<void>>();
@@ -51,12 +59,12 @@ function setup(initial: Practice = breathing) {
   });
   const player = new MeditationPlayer(
     audio,
-    { toggle, status, indicator },
+    { toggle, label, status, indicator },
     mediaSession,
     [{ src: '/medi/icons/icon-512.png', sizes: '512x512', type: 'image/png' }],
     initial,
   );
-  return { audio, toggle, status, indicator, handlers, mediaSession, player };
+  return { audio, toggle, label, status, indicator, handlers, mediaSession, player };
 }
 
 afterEach(() => {
@@ -66,74 +74,102 @@ afterEach(() => {
 
 describe('MeditationPlayer', () => {
   it('loads the selected practice without autoplay and keeps the loop', () => {
-    const { audio, toggle, status } = setup();
+    const { audio, label, status } = setup();
     expect(audio.src).toBe(breathing.src);
     expect(audio.load).toHaveBeenCalledOnce();
     expect(audio.play).not.toHaveBeenCalled();
     expect(audio.loop).toBe(true);
-    expect(toggle.textContent).toBe('Начать');
+    expect(label.textContent).toBe('Начать');
     expect(status.textContent).toContain('Загружаем');
   });
 
+  it('updates the visible dock label and the toggle state with the audio state', async () => {
+    const { toggle, label, player } = setup();
+    expect(label.textContent).toBe('Начать');
+    expect(toggle.dataset.state).toBe('loading');
+    await player.toggle();
+    expect(label.textContent).toBe('Стоп');
+    expect(toggle.dataset.state).toBe('playing');
+    expect(toggle.setAttribute).toHaveBeenCalledWith('aria-label', 'Стоп');
+    await player.toggle();
+    expect(label.textContent).toBe('Начать');
+    expect(toggle.dataset.state).toBe('stopped');
+  });
+
+  it('falls back to the button text when no separate label element is provided', () => {
+    const audio = new FakeAudio();
+    const toggle = {
+      textContent: 'Начать',
+      dataset: {} as DOMStringMap,
+      setAttribute: vi.fn(),
+      addEventListener: vi.fn(),
+    } as unknown as HTMLButtonElement;
+    const status = { textContent: '' } as HTMLElement;
+    const indicator = { className: 'status', dataset: {} } as unknown as HTMLElement;
+    new MeditationPlayer(audio, { toggle, status, indicator }, undefined);
+    expect(toggle.textContent).toBe('Начать');
+    expect(toggle.dataset.state).toBe('loading');
+  });
+
   it('starts only after an explicit action and reflects the play event', async () => {
-    const { audio, toggle, status, player } = setup();
+    const { audio, label, status, player } = setup();
     expect(audio.play).not.toHaveBeenCalled();
     await player.toggle();
-    expect(toggle.textContent).toBe('Стоп');
+    expect(label.textContent).toBe('Стоп');
     expect(status.textContent).toContain('Треугольник дыхания');
     expect(audio.loop).toBe(true);
   });
 
   it('stops, rewinds and starts again from the beginning', async () => {
-    const { audio, toggle, status, player } = setup();
+    const { audio, label, status, player } = setup();
     await player.toggle();
     audio.currentTime = 12;
     await player.toggle();
     expect(audio.pause).toHaveBeenCalledOnce();
     expect(audio.currentTime).toBe(0);
-    expect(toggle.textContent).toBe('Начать');
+    expect(label.textContent).toBe('Начать');
     expect(status.textContent).toContain('Остановлено');
     await player.toggle();
     expect(audio.currentTime).toBe(0);
   });
 
   it('handles a rejected play promise without an unhandled error', async () => {
-    const { audio, toggle, status, player } = setup();
+    const { audio, label, status, player } = setup();
     audio.play.mockRejectedValueOnce(new DOMException('Blocked', 'NotAllowedError'));
     await expect(player.toggle()).resolves.toBeUndefined();
-    expect(toggle.textContent).toBe('Начать');
+    expect(label.textContent).toBe('Начать');
     expect(status.textContent).toContain('недоступно');
   });
 
   it('reflects an external pause and keeps the position', async () => {
-    const { audio, toggle, status, player } = setup();
+    const { audio, label, status, player } = setup();
     await player.toggle();
     audio.currentTime = 8;
     audio.pause();
-    expect(toggle.textContent).toBe('Начать');
+    expect(label.textContent).toBe('Начать');
     expect(status.textContent).toContain('Пауза');
     expect(audio.currentTime).toBe(8);
   });
 
   it('shows buffering only while audio is still playing', async () => {
-    const { audio, toggle, status, player } = setup();
+    const { audio, label, status, player } = setup();
     await player.toggle();
     audio.dispatchEvent(new Event('waiting'));
-    expect(toggle.textContent).toBe('Стоп');
+    expect(label.textContent).toBe('Стоп');
     expect(status.textContent).toContain('Подключаем');
   });
 
   it('shows an audio error and restores the start action', async () => {
-    const { audio, toggle, status, player } = setup();
+    const { audio, label, status, player } = setup();
     await player.toggle();
     audio.paused = true;
     audio.dispatchEvent(new Event('error'));
-    expect(toggle.textContent).toBe('Начать');
+    expect(label.textContent).toBe('Начать');
     expect(status.textContent).toContain('недоступно');
   });
 
   it('switches the source, resets the position and does not autoplay', async () => {
-    const { audio, toggle, status, player } = setup();
+    const { audio, label, status, player } = setup();
     await player.toggle();
     audio.currentTime = 11;
     player.select(drums);
@@ -142,7 +178,7 @@ describe('MeditationPlayer', () => {
     expect(audio.src).toBe(drums.src);
     expect(audio.load).toHaveBeenCalledTimes(2);
     expect(audio.play).toHaveBeenCalledOnce();
-    expect(toggle.textContent).toBe('Начать');
+    expect(label.textContent).toBe('Начать');
     expect(status.textContent).toContain('Шаманские барабаны');
   });
 
@@ -156,14 +192,14 @@ describe('MeditationPlayer', () => {
   });
 
   it('plays the new practice from the beginning after a switch', async () => {
-    const { audio, toggle, status, player } = setup();
+    const { audio, label, status, player } = setup();
     await player.toggle();
     player.select(drums);
     audio.dispatchEvent(new Event('canplay'));
     expect(status.textContent).toContain('Шаманские барабаны');
     await player.toggle();
     expect(audio.currentTime).toBe(0);
-    expect(toggle.textContent).toBe('Стоп');
+    expect(label.textContent).toBe('Стоп');
   });
 
   it('ignores a stale rejected play after a fast switch', async () => {
@@ -208,19 +244,19 @@ describe('MeditationPlayer', () => {
     [10, 600_000],
   ])('finishes the %i-minute session by its own timer', async (duration, milliseconds) => {
     vi.useFakeTimers();
-    const { audio, toggle, status, mediaSession, player } = setup();
+    const { audio, label, status, mediaSession, player } = setup();
     player.selectDuration(duration);
     await player.toggle();
     await vi.advanceTimersByTimeAsync(milliseconds - 1);
-    expect(toggle.textContent).toBe('Стоп');
+    expect(label.textContent).toBe('Стоп');
     await vi.advanceTimersByTimeAsync(1);
-    expect(toggle.textContent).toBe('Начать');
+    expect(label.textContent).toBe('Начать');
     expect(status.textContent).toContain('Практика завершена');
     expect(audio.paused).toBe(true);
     expect(audio.currentTime).toBe(0);
     expect(mediaSession.playbackState).toBe('none');
     await player.toggle();
-    expect(toggle.textContent).toBe('Стоп');
+    expect(label.textContent).toBe('Стоп');
     expect(audio.currentTime).toBe(0);
     await vi.advanceTimersByTimeAsync(milliseconds);
     expect(status.textContent).toContain('Практика завершена');

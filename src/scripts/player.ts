@@ -9,6 +9,7 @@ import {
 
 export interface PlayerElements {
   toggle: HTMLButtonElement;
+  label?: HTMLElement;
   status: HTMLElement;
   indicator: HTMLElement;
 }
@@ -193,8 +194,10 @@ export class MeditationPlayer {
   }
 
   private render(label: string, message: string, state: string): void {
-    this.elements.toggle.textContent = label;
+    const labelTarget = this.elements.label ?? this.elements.toggle;
+    labelTarget.textContent = label;
     this.elements.toggle.setAttribute('aria-label', label);
+    this.elements.toggle.dataset.state = state;
     this.elements.status.textContent = message;
     this.elements.indicator.className = `status status-${state === 'error' ? 'error' : state === 'playing' ? 'success' : 'neutral'}`;
     this.elements.indicator.dataset.state = state;
@@ -289,11 +292,16 @@ export class MeditationPlayer {
 export function initPlayer(): void {
   const audio = document.querySelector<HTMLAudioElement>('[data-player-audio]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-player-toggle]');
+  const label = document.querySelector<HTMLElement>('[data-player-toggle-label]');
   const status = document.querySelector<HTMLElement>('[data-player-status]');
   const indicator = document.querySelector<HTMLElement>('[data-player-indicator]');
   if (!audio || !toggle || !status || !indicator) return;
   const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('[data-player-practice]'));
   const durationGroup = document.querySelector<HTMLElement>('[data-player-durations]');
+  const durationEmpty = document.querySelector<HTMLElement>('[data-player-duration-empty]');
+  const currentTitle = document.querySelector<HTMLElement>('[data-player-current-title]');
+  const currentDescription = document.querySelector<HTMLElement>('[data-player-current-description]');
+  const soundSummary = document.querySelector<HTMLElement>('[data-player-dropdown="sound"] > summary');
   const durationInputs = Array.from(document.querySelectorAll<HTMLInputElement>('[data-player-duration]'));
   const checkedId = inputs.find((input) => input.checked)?.value;
   const initial = PRACTICES.find((practice) => practice.id === checkedId) ?? DEFAULT_PRACTICE;
@@ -301,14 +309,22 @@ export function initPlayer(): void {
   const artwork = [{ src: `${import.meta.env.BASE_URL}icons/icon-512.png`, sizes: '512x512', type: 'image/png' }];
   const player = new MeditationPlayer(
     audio,
-    { toggle, status, indicator },
+    { toggle, label: label ?? undefined, status, indicator },
     navigator.mediaSession,
     artwork,
     initial,
     initialDuration,
   );
 
-  if (durationGroup) durationGroup.hidden = !initial.sessionDurations;
+  const renderPractice = (practice: Practice): void => {
+    if (currentTitle) currentTitle.textContent = practice.title;
+    if (currentDescription) currentDescription.textContent = practice.description;
+    if (soundSummary) soundSummary.setAttribute('aria-label', `Звук: ${practice.title}`);
+    if (durationGroup) durationGroup.hidden = !practice.sessionDurations;
+    if (durationEmpty) durationEmpty.hidden = Boolean(practice.sessionDurations);
+  };
+
+  renderPractice(initial);
 
   for (const input of inputs) {
     input.addEventListener('change', () => {
@@ -316,7 +332,7 @@ export function initPlayer(): void {
       const practice = PRACTICES.find((candidate) => candidate.id === input.value);
       if (practice) {
         player.select(practice);
-        if (durationGroup) durationGroup.hidden = !practice.sessionDurations;
+        renderPractice(practice);
       }
     });
   }

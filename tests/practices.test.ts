@@ -15,6 +15,7 @@ describe('practices', () => {
     ]);
     expect(DEFAULT_PRACTICE).toMatchObject({
       title: 'Треугольник дыхания',
+      description: 'Вдох 7 с · тишина 7 с · выдох 7 с',
       duration: '3–10 минут',
       sessionDurations: [3, 5, 10],
     });
@@ -22,6 +23,7 @@ describe('practices', () => {
 
     for (const practice of PRACTICES) {
       expect(practice.title).not.toBe('');
+      expect(practice.description).not.toBe('');
       expect(practice.src).toMatch(/audio\/[a-z-]+\.mp3$/);
     }
     for (const practice of PRACTICES.slice(1)) {
