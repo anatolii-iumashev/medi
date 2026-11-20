@@ -74,7 +74,23 @@ for (const viewport of [
     expect(soundBox?.x ?? 0).toBeGreaterThanOrEqual((buttonBox?.x ?? 0) + (buttonBox?.width ?? 0));
 
     const dockBox = await dock(page).boundingBox();
-    expect(Math.round((dockBox?.y ?? 0) + (dockBox?.height ?? 0))).toBe(viewport.height);
+    const dockStyles = await dock(page).evaluate((element) => {
+      const styles = getComputedStyle(element);
+      return {
+        bottom: window.innerHeight - element.getBoundingClientRect().bottom,
+        radius: parseFloat(styles.borderRadius),
+        backdrop: styles.backdropFilter,
+        shadow: styles.boxShadow,
+      };
+    });
+    if (viewport.width >= 640) {
+      expect(Math.round(dockStyles.bottom)).toBe(24);
+      expect(dockStyles.radius).toBeGreaterThanOrEqual(16);
+      expect(dockStyles.backdrop).toContain('blur');
+      expect(dockStyles.shadow).not.toBe('none');
+    } else {
+      expect(Math.round(dockStyles.bottom)).toBe(0);
+    }
     const contentBox = await durationGroup(page).boundingBox();
     expect((contentBox?.y ?? 0) + (contentBox?.height ?? 0)).toBeLessThan(dockBox?.y ?? 0);
 
