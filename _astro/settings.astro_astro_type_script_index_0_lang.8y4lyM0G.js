@@ -1,1 +1,0 @@
-import{t as e}from"./preferences.CtlhIkIN.js";e();

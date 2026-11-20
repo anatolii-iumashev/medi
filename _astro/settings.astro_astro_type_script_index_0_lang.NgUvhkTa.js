@@ -1,0 +1,1 @@
+import{t as e}from"./preferences.Rc5YJZJf.js";e();
