@@ -198,6 +198,25 @@ test('remembers the default practice from the settings page', async ({ page }) =
   await expect(practiceInput(page, 'shamanic-drums')).toBeChecked();
 });
 
+test('remembers the last chosen practice on the next launch', async ({ page }) => {
+  await page.goto('./');
+  await choosePractice(page, 'Мягкий белый шум');
+  expect(await page.evaluate(() => localStorage.getItem('medi:default-practice'))).toBe('soft-white-noise');
+  await expect(playerButton(page)).toHaveText('Начать');
+
+  await page.reload();
+  await expect(currentTitle(page)).toHaveText('Мягкий белый шум');
+  await expect(audio(page)).toHaveAttribute('src', /\/medi\/audio\/soft-white-noise\.mp3$/);
+  await expect(durationGroup(page)).toBeHidden();
+  await expect(playerButton(page)).toHaveText('Начать');
+  await openMenu(page, 'sound');
+  await expect(practiceInput(page, 'soft-white-noise')).toBeChecked();
+  await closeMenu(page, 'sound');
+
+  await settingsLink(page).click();
+  await expect(page.getByRole('radio', { name: 'Мягкий белый шум', exact: true })).toBeChecked();
+});
+
 test('applies and remembers the color theme on the settings page', async ({ page }) => {
   await page.goto('./settings');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'medi');

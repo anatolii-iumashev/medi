@@ -34,6 +34,14 @@ export function readDefaultPractice(): string | null {
   return read(DEFAULT_PRACTICE_KEY);
 }
 
+/**
+ * Remembers the practice the user actually listens to, so the next launch
+ * starts with it; the Settings radios read the same value.
+ */
+export function writeDefaultPractice(id: string): void {
+  write(DEFAULT_PRACTICE_KEY, id);
+}
+
 export function readThemePreference(): ThemePreference {
   const stored = read(THEME_KEY);
   return isThemePreference(stored) ? stored : 'dark';

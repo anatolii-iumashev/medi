@@ -6,7 +6,7 @@ import {
   type Practice,
   type SessionDuration,
 } from './practices';
-import { readDefaultPractice } from './preferences';
+import { readDefaultPractice, writeDefaultPractice } from './preferences';
 
 export interface PlayerElements {
   toggle: HTMLButtonElement;
@@ -335,6 +335,7 @@ export function initPlayer(): void {
       const practice = PRACTICES.find((candidate) => candidate.id === input.value);
       if (practice) {
         player.select(practice);
+        writeDefaultPractice(practice.id);
         renderPractice(practice);
       }
     });
