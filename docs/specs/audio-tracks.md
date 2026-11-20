@@ -7,7 +7,7 @@ rfc:
   - ../rfc/archive/second-audio-track.md
   - ../rfc/archive/third-audio-track.md
   - ../rfc/archive/breathing-triangle.md
-  - ../rfc/player-dock-and-aura.md
+  - ../rfc/archive/2611/player-dock-and-aura.md
 ---
 
 # Spec: Три практики, переключатель аудиотреков и длительность дыхания
