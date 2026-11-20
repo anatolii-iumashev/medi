@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-type MenuName = 'settings' | 'sound';
+type MenuName = 'sound';
 
 const playerButton = (page: Page) => page.locator('[data-player-toggle]');
 const practiceRadio = (page: Page, name: string) => page.getByRole('radio', { name: new RegExp(name) });
@@ -14,12 +14,15 @@ const panel = (page: Page, name: MenuName) => menu(page, name).locator('.dropdow
 const practiceInput = (page: Page, id: string) => page.locator(`input[name="practice"][value="${id}"]`);
 const durationInput = (page: Page, value: number) => page.locator(`input[name="session-duration"][value="${value}"]`);
 const currentTitle = (page: Page) => page.locator('[data-player-current-title]');
+const settingsLink = (page: Page) => page.getByRole('link', { name: 'Настройки' });
 
 async function openMenu(page: Page, name: MenuName): Promise<void> {
   const details = menu(page, name);
   const isOpen = await details.evaluate((element: HTMLDetailsElement) => element.open);
   if (!isOpen) await summary(page, name).click();
   await expect(details).toHaveJSProperty('open', true);
+  // Let the dropdown scale/opacity transition settle before measuring.
+  await page.waitForTimeout(250);
 }
 
 async function closeMenu(page: Page, name: MenuName): Promise<void> {
@@ -36,10 +39,9 @@ async function choosePractice(page: Page, name: string): Promise<void> {
 }
 
 async function chooseDuration(page: Page, name: string): Promise<void> {
-  await openMenu(page, 'settings');
   const radio = durationRadio(page, name);
   if (!(await radio.isChecked())) await radio.check();
-  await closeMenu(page, 'settings');
+  await expect(radio).toBeChecked();
 }
 
 for (const viewport of [
@@ -54,49 +56,53 @@ for (const viewport of [
     await expect(dock(page)).toBeVisible();
     await expect(page.getByRole('status')).toBeAttached();
     await expect(currentTitle(page)).toBeVisible();
+    await expect(durationGroup(page)).toBeVisible();
 
     const button = playerButton(page);
     const buttonBox = await button.boundingBox();
     expect(buttonBox?.height).toBeGreaterThanOrEqual(44);
     expect(Math.abs((buttonBox?.x ?? 0) + (buttonBox?.width ?? 0) / 2 - viewport.width / 2)).toBeLessThanOrEqual(2);
 
-    for (const name of ['settings', 'sound'] as const) {
-      const box = await summary(page, name).boundingBox();
+    const settingsBox = await settingsLink(page).boundingBox();
+    const soundBox = await summary(page, 'sound').boundingBox();
+    for (const box of [settingsBox, soundBox]) {
       expect(box?.width).toBeGreaterThanOrEqual(44);
       expect(box?.height).toBeGreaterThanOrEqual(44);
       expect(Math.abs((box?.width ?? 0) - (buttonBox?.width ?? 0))).toBeLessThanOrEqual(1);
-      expect(box?.x).toBeGreaterThanOrEqual((buttonBox?.x ?? 0) + (buttonBox?.width ?? 0));
     }
+    expect((settingsBox?.x ?? 0) + (settingsBox?.width ?? 0)).toBeLessThanOrEqual(buttonBox?.x ?? 0);
+    expect(soundBox?.x ?? 0).toBeGreaterThanOrEqual((buttonBox?.x ?? 0) + (buttonBox?.width ?? 0));
 
     const dockBox = await dock(page).boundingBox();
     expect(Math.round((dockBox?.y ?? 0) + (dockBox?.height ?? 0))).toBe(viewport.height);
-    const contentBox = await currentTitle(page).boundingBox();
+    const contentBox = await durationGroup(page).boundingBox();
     expect((contentBox?.y ?? 0) + (contentBox?.height ?? 0)).toBeLessThan(dockBox?.y ?? 0);
 
-    for (const name of ['sound', 'settings'] as const) {
-      await openMenu(page, name);
-      const panelBox = await panel(page, name).boundingBox();
-      expect(panelBox?.x ?? -1).toBeGreaterThanOrEqual(0);
-      expect((panelBox?.x ?? 0) + (panelBox?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
-      expect(panelBox?.y ?? -1).toBeGreaterThanOrEqual(0);
-      expect((panelBox?.y ?? 0) + (panelBox?.height ?? 0)).toBeLessThanOrEqual((await summary(page, name).boundingBox())?.y ?? 0);
-      const radios = name === 'sound'
-        ? ['Треугольник дыхания', 'Шаманские барабаны', 'Мягкий белый шум'].map((practice) => practiceRadio(page, practice))
-        : ['3 минуты', '5 минут', '10 минут'].map((duration) => durationRadio(page, duration));
-      for (const radio of radios) {
-        await expect(radio).toBeVisible();
-        const labelBox = await radio.locator('..').boundingBox();
-        expect(labelBox?.height).toBeGreaterThanOrEqual(44);
-        expect(labelBox?.width).toBeGreaterThanOrEqual(44);
-      }
-      await page.keyboard.press('Escape');
-      await expect(menu(page, name)).toHaveJSProperty('open', false);
+    await openMenu(page, 'sound');
+    const panelBox = await panel(page, 'sound').boundingBox();
+    expect(panelBox?.x ?? -1).toBeGreaterThanOrEqual(0);
+    expect((panelBox?.x ?? 0) + (panelBox?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
+    expect(panelBox?.y ?? -1).toBeGreaterThanOrEqual(0);
+    expect((panelBox?.y ?? 0) + (panelBox?.height ?? 0)).toBeLessThanOrEqual((await summary(page, 'sound').boundingBox())?.y ?? 0);
+    for (const practice of ['Треугольник дыхания', 'Шаманские барабаны', 'Мягкий белый шум']) {
+      const radio = practiceRadio(page, practice);
+      await expect(radio).toBeVisible();
+      const labelBox = await radio.locator('..').boundingBox();
+      expect(labelBox?.height).toBeGreaterThanOrEqual(44);
+      expect(labelBox?.width).toBeGreaterThanOrEqual(44);
+    }
+    await page.keyboard.press('Escape');
+    await expect(menu(page, 'sound')).toHaveJSProperty('open', false);
+
+    for (const name of ['3 минуты', '5 минут', '10 минут']) {
+      const labelBox = await durationRadio(page, name).locator('..').boundingBox();
+      expect(labelBox?.height).toBeGreaterThanOrEqual(44);
+      expect(labelBox?.width).toBeGreaterThanOrEqual(44);
     }
 
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).toBe(true);
 
-    await openMenu(page, 'settings');
     await durationRadio(page, '3 минуты').focus();
     await page.keyboard.press('ArrowRight');
     await expect(durationInput(page, 5)).toBeChecked();
@@ -106,7 +112,23 @@ for (const viewport of [
   });
 }
 
-test('selects practices and durations from the dock dropdowns', async ({ page }) => {
+test('settings page fits and keeps preferences accessible', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  await page.goto('./settings');
+  await expect(page.getByRole('heading', { name: 'Настройки' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'На главную' })).toBeVisible();
+  for (const name of ['Треугольник дыхания', 'Шаманские барабаны', 'Мягкий белый шум', 'Системная', 'Тёмная', 'Светлая']) {
+    const radio = page.getByRole('radio', { name, exact: true });
+    await expect(radio).toBeVisible();
+    const labelBox = await radio.locator('..').boundingBox();
+    expect(labelBox?.height).toBeGreaterThanOrEqual(44);
+    expect(labelBox?.width).toBeGreaterThanOrEqual(44);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).toBe(true);
+});
+
+test('selects practices from the dock and durations on screen', async ({ page }) => {
   await page.goto('./');
   await expect(summary(page, 'sound')).toHaveAttribute('aria-label', 'Звук: Треугольник дыхания');
   await openMenu(page, 'sound');
@@ -122,46 +144,76 @@ test('selects practices and durations from the dock dropdowns', async ({ page })
   await expect(currentTitle(page)).toHaveText('Шаманские барабаны');
   await expect(summary(page, 'sound')).toHaveAttribute('aria-label', 'Звук: Шаманские барабаны');
   await expect(playerButton(page)).toHaveText('Начать');
-
-  await openMenu(page, 'settings');
   await expect(durationGroup(page)).toBeHidden();
-  await expect(page.locator('[data-player-duration-empty]')).toBeVisible();
-  await expect(page.locator('[data-player-duration-empty]')).toContainText('нет дополнительных настроек');
-  await page.keyboard.press('Escape');
-  await expect(summary(page, 'settings')).toBeFocused();
 
   await choosePractice(page, 'Треугольник дыхания');
+  await expect(durationGroup(page)).toBeVisible();
   await chooseDuration(page, '5 минут');
-  await expect(durationInput(page, 5)).toBeChecked();
-
   await choosePractice(page, 'Мягкий белый шум');
   await expect(page.locator('[data-player-current-description]')).toHaveText('Спокойный фон на час');
+  await expect(durationGroup(page)).toBeHidden();
   await choosePractice(page, 'Треугольник дыхания');
-  await openMenu(page, 'settings');
-  await expect(durationGroup(page)).toBeVisible();
   await expect(durationInput(page, 5)).toBeChecked();
-  await page.keyboard.press('Escape');
+
   await page.reload();
+  await expect(durationInput(page, 3)).toBeChecked();
   await openMenu(page, 'sound');
   await expect(practiceInput(page, 'breathing-triangle')).toBeChecked();
-  await page.keyboard.press('Escape');
-  await openMenu(page, 'settings');
-  await expect(durationRadio(page, '3 минуты')).toBeChecked();
 });
 
-test('dock dropdowns are mutually exclusive and dismiss on Escape and outside taps', async ({ page }) => {
+test('remembers the default practice from the settings page', async ({ page }) => {
+  await page.goto('./');
+  await expect(settingsLink(page)).toHaveAttribute('href', '/medi/settings');
+  await settingsLink(page).click();
+  await expect(page).toHaveURL(/\/medi\/settings$/);
+  await expect(page.getByRole('heading', { name: 'Настройки' })).toBeVisible();
+  await page.getByRole('radio', { name: 'Шаманские барабаны', exact: true }).check();
+  await expect(page.locator('input[name="default-practice"][value="shamanic-drums"]')).toBeChecked();
+  expect(await page.evaluate(() => localStorage.getItem('medi:default-practice'))).toBe('shamanic-drums');
+  await page.reload();
+  await expect(page.getByRole('radio', { name: 'Шаманские барабаны', exact: true })).toBeChecked();
+
+  await page.getByRole('link', { name: 'На главную' }).click();
+  await expect(page).toHaveURL(/\/medi\/$/);
+  await expect(currentTitle(page)).toHaveText('Шаманские барабаны');
+  await expect(durationGroup(page)).toBeHidden();
+  await expect(audio(page)).toHaveAttribute('src', /\/medi\/audio\/shamanic-drums-loop\.mp3$/);
+  await openMenu(page, 'sound');
+  await expect(practiceInput(page, 'shamanic-drums')).toBeChecked();
+});
+
+test('applies and remembers the color theme on the settings page', async ({ page }) => {
+  await page.goto('./settings');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'medi');
+  await page.getByRole('radio', { name: 'Светлая', exact: true }).check();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'medi-light');
+  expect(await page.evaluate(() => localStorage.getItem('medi:theme'))).toBe('light');
+  const lightBackground = await page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor);
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'medi-light');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor)).toBe(lightBackground);
+  await expect(page.getByRole('radio', { name: 'Светлая', exact: true })).toBeChecked();
+
+  await page.getByRole('link', { name: 'На главную' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'medi-light');
+
+  await settingsLink(page).click();
+  await page.getByRole('radio', { name: 'Системная', exact: true }).check();
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'medi-light');
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'medi');
+});
+
+test('sound dropdown dismisses on Escape and outside taps', async ({ page }) => {
   await page.goto('./');
   await summary(page, 'sound').focus();
   await page.keyboard.press('Enter');
   await expect(menu(page, 'sound')).toHaveJSProperty('open', true);
 
-  await summary(page, 'settings').click();
-  await expect(menu(page, 'settings')).toHaveJSProperty('open', true);
-  await expect(menu(page, 'sound')).toHaveJSProperty('open', false);
-
   await page.keyboard.press('Escape');
-  await expect(menu(page, 'settings')).toHaveJSProperty('open', false);
-  await expect(summary(page, 'settings')).toBeFocused();
+  await expect(menu(page, 'sound')).toHaveJSProperty('open', false);
+  await expect(summary(page, 'sound')).toBeFocused();
 
   await summary(page, 'sound').click();
   await expect(menu(page, 'sound')).toHaveJSProperty('open', true);
@@ -246,9 +298,7 @@ test('changes duration during playback without autoplay and keeps the last selec
   expect(await audio(page).evaluate((element: HTMLAudioElement) => element.currentTime)).toBe(0);
   await expect(audio(page)).toHaveAttribute('src', '/medi/audio/breathing-triangle.mp3');
   await chooseDuration(page, '10 минут');
-  await openMenu(page, 'settings');
-  await expect(durationRadio(page, '10 минут')).toBeChecked();
-  await page.keyboard.press('Escape');
+  await expect(durationInput(page, 10)).toBeChecked();
   await expect(button).toHaveText('Начать');
   expect(await audio(page).evaluate((element: HTMLAudioElement) => element.paused)).toBe(true);
 });
@@ -333,6 +383,7 @@ test('uses base-aware manifest icons and precaches every runtime asset', async (
     'audio/soft-white-noise.mp3',
     'icons/icon-192.png',
     'icons/icon-512.png',
+    'settings',
     'manifest.webmanifest',
   ]) {
     expect(cachedUrls.some((url) => new URL(url).pathname.endsWith(suffix))).toBe(true);
@@ -348,6 +399,10 @@ test('restarts and plays every practice and duration in airplane mode', async ({
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'medi' })).toBeVisible();
+  await page.goto('./settings');
+  await expect(page.getByRole('heading', { name: 'Настройки' })).toBeVisible();
+  await page.getByRole('link', { name: 'На главную' }).click();
+  await expect(page.getByRole('heading', { name: 'medi' })).toBeVisible();
   for (const name of ['3 минуты', '5 минут', '10 минут']) {
     await chooseDuration(page, name);
     await playerButton(page).click();
@@ -357,10 +412,7 @@ test('restarts and plays every practice and duration in airplane mode', async ({
   }
   for (const name of ['Шаманские барабаны', 'Мягкий белый шум']) {
     await choosePractice(page, name);
-    await openMenu(page, 'settings');
     await expect(durationGroup(page)).toBeHidden();
-    await expect(page.locator('[data-player-duration-empty]')).toBeVisible();
-    await page.keyboard.press('Escape');
     await playerButton(page).click();
     await expect(playerButton(page)).toHaveText('Стоп');
     await playerButton(page).click();

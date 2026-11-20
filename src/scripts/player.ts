@@ -6,6 +6,7 @@ import {
   type Practice,
   type SessionDuration,
 } from './practices';
+import { readDefaultPractice } from './preferences';
 
 export interface PlayerElements {
   toggle: HTMLButtonElement;
@@ -298,11 +299,14 @@ export function initPlayer(): void {
   if (!audio || !toggle || !status || !indicator) return;
   const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('[data-player-practice]'));
   const durationGroup = document.querySelector<HTMLElement>('[data-player-durations]');
-  const durationEmpty = document.querySelector<HTMLElement>('[data-player-duration-empty]');
   const currentTitle = document.querySelector<HTMLElement>('[data-player-current-title]');
   const currentDescription = document.querySelector<HTMLElement>('[data-player-current-description]');
   const soundSummary = document.querySelector<HTMLElement>('[data-player-dropdown="sound"] > summary');
   const durationInputs = Array.from(document.querySelectorAll<HTMLInputElement>('[data-player-duration]'));
+  const storedDefault = readDefaultPractice();
+  if (storedDefault && inputs.some((input) => input.value === storedDefault)) {
+    for (const input of inputs) input.checked = input.value === storedDefault;
+  }
   const checkedId = inputs.find((input) => input.checked)?.value;
   const initial = PRACTICES.find((practice) => practice.id === checkedId) ?? DEFAULT_PRACTICE;
   const initialDuration = Number(durationInputs.find((input) => input.checked)?.value);
@@ -321,7 +325,6 @@ export function initPlayer(): void {
     if (currentDescription) currentDescription.textContent = practice.description;
     if (soundSummary) soundSummary.setAttribute('aria-label', `Звук: ${practice.title}`);
     if (durationGroup) durationGroup.hidden = !practice.sessionDurations;
-    if (durationEmpty) durationEmpty.hidden = Boolean(practice.sessionDurations);
   };
 
   renderPractice(initial);

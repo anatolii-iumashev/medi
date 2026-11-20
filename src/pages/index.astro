@@ -1,42 +1,29 @@
 ---
 import MeditationPlayer from '../components/MeditationPlayer.astro';
-import '../styles/global.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
 const title = 'medi — спокойные практики';
 const description = 'Три спокойные практики с локальным звуком, доступные без сети после первого открытия.';
 ---
 
-<!doctype html>
-<html lang="ru" data-theme="medi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#17231f" />
-    <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
-    <link rel="manifest" href={`${import.meta.env.BASE_URL}manifest.webmanifest`} />
-    <script src={`${import.meta.env.BASE_URL}registerSW.js`} defer></script>
-    <title>{title}</title>
-  </head>
-  <body>
-    <main
-      class="relative flex min-h-dvh items-center justify-center overflow-x-hidden bg-base-100 px-5 pt-6 pb-[calc(4.5rem+env(safe-area-inset-bottom)+1.5rem)] text-base-content sm:px-8 sm:pt-14 sm:pb-[calc(4.5rem+env(safe-area-inset-bottom)+2rem)]"
-    >
-      <div class="flex w-full max-w-md flex-col items-center">
-        <MeditationPlayer />
-      </div>
-    </main>
-    <script>
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        let reloading = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (reloading) return;
-          const audio = document.querySelector<HTMLAudioElement>('[data-player-audio]');
-          if (audio && !audio.paused) return;
-          reloading = true;
-          window.location.reload();
-        });
-      }
-    </script>
-  </body>
-</html>
+<BaseLayout title={title} description={description}>
+  <main
+    class="relative flex min-h-dvh items-center justify-center overflow-x-hidden bg-base-100 px-5 pt-6 pb-[calc(4.5rem+env(safe-area-inset-bottom)+1.5rem)] text-base-content sm:px-8 sm:pt-14 sm:pb-[calc(4.5rem+env(safe-area-inset-bottom)+2rem)]"
+  >
+    <div class="flex w-full max-w-md flex-col items-center">
+      <MeditationPlayer />
+    </div>
+  </main>
+  <script>
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloading) return;
+        const audio = document.querySelector<HTMLAudioElement>('[data-player-audio]');
+        if (audio && !audio.paused) return;
+        reloading = true;
+        window.location.reload();
+      });
+    }
+  </script>
+</BaseLayout>
