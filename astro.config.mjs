@@ -1,6 +1,8 @@
 import tailwindcss from '@tailwindcss/vite';
 import { AstroPWAIntegration } from '@vite-pwa/astro';
 import { defineConfig } from 'astro/config';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const repository = process.env.GITHUB_REPOSITORY?.split('/')[1];
 const owner = process.env.GITHUB_REPOSITORY_OWNER;
@@ -9,12 +11,39 @@ const repositoryBase = repository && !repository.endsWith('.github.io') ? `/${re
 const base = process.env.BASE_PATH ?? (isGitHubActions ? repositoryBase : '/');
 const site = process.env.SITE_URL ?? (isGitHubActions && owner ? `https://${owner}.github.io` : 'http://localhost:4321');
 
+/**
+ * The browser fetches the tab icon itself, with `Sec-Fetch-Site: cross-site`, and
+ * Astro's dev server refuses cross-site subresource requests. `public/favicon.svg`
+ * is a published asset, not source code, so serve it ahead of that guard in dev.
+ */
+function devPublicFavicon() {
+  return {
+    name: 'medi:dev-public-favicon',
+    apply: 'serve',
+    configureServer(server) {
+      const file = resolve('public/favicon.svg');
+      const handle = (req, res, next) => {
+        const pathname = (req.url ?? '').split('?')[0];
+        if (!pathname.endsWith('/favicon.svg')) return next();
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.end(readFileSync(file));
+      };
+      // Astro unshifts its Sec-Fetch guard from a post hook, so insert once the
+      // server is listening, after every plugin has arranged the stack.
+      const install = () => server.middlewares.stack.unshift({ route: '', handle });
+      if (server.httpServer?.listening) install();
+      else server.httpServer?.once('listening', install);
+    },
+  };
+}
+
 export default defineConfig({
   site,
   base,
   output: 'static',
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [devPublicFavicon(), tailwindcss()],
   },
   integrations: [
     AstroPWAIntegration({

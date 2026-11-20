@@ -24,7 +24,7 @@ medi — статическая русскоязычная PWA с тремя nam
 
 ## Карта файлов
 
-- `src/layouts/BaseLayout.astro` — общий head обеих страниц: метаданные, pre-paint применение темы, manifest и registerSW.
+- `src/layouts/BaseLayout.astro` — общий head обеих страниц: метаданные, pre-paint применение темы, manifest и registerSW (только в сборке).
 - `src/pages/index.astro` — главная страница: плеер, dock и перезагрузка при обновлении service worker.
 - `src/pages/settings.astro` — отдельная страница предпочтений: аудио по умолчанию и тема.
 - `src/components/MeditationPlayer.astro` — разметка главной: логотип с aura, блок текущей практики, длительность, `<audio>`, нижний dock со ссылкой настроек и меню «Звук».
@@ -33,7 +33,7 @@ medi — статическая русскоязычная PWA с тремя nam
 - `src/scripts/preferences.ts` — аудио по умолчанию и тема: чтение/запись `localStorage`, применение `data-theme`, синхронизация radio на странице настроек.
 - `src/scripts/practices.ts` — статический typed-набор ровно из трёх практик, допустимые длительности и base-aware URL.
 - `src/styles/global.css` — Tailwind 4, daisyUI 5, темы `medi` и `medi-light`.
-- `astro.config.mjs` — `site`, `base`, manifest, Workbox и precache.
+- `astro.config.mjs` — `site`, `base`, manifest, Workbox, precache и dev-обход блокировки favicon.
 - `vitest.config.ts` — отделение unit-тестов от Playwright.
 - `public/audio/breathing-triangle.mp3` — 21-секундный луп «Треугольника дыхания» (~124 КиБ, 48 kbps mono): 7 с белого шума, 7 с тишины, 7 с затухающего «Ом».
 - `public/audio/shamanic-drums-loop.mp3` — часовой луп практики «Шаманские барабаны» (~21,7 МБ, 48 kbps mono).
